@@ -1,0 +1,28 @@
+<div class="page-header"><h2 class="page-title">Add node</h2></div>
+
+<div class="card mt-3">
+  <div class="card-body">
+    <%= form_with model: @node, url: social_nodes_path, local: true do |f| %>
+      <% if @node.errors.any? %>
+        <div class="alert alert-danger">
+          <h4 class="alert-title"><%= pluralize(@node.errors.count, "error") %></h4>
+          <ul class="mb-0">
+            <% @node.errors.full_messages.each { |m| %><li><%= m %></li><% } %>
+          </ul>
+        </div>
+      <% end %>
+      <div class="mb-3">
+        <%= f.label :id, "ID (slug)", class: "form-label required" %>
+        <%= f.text_field :id, placeholder: "alice", class: "form-control" %>
+      </div>
+      <div class="mb-3">
+        <%= f.label :name, "Display name", class: "form-label" %>
+        <%= f.text_field :name, class: "form-control" %>
+      </div>
+      <div class="btn-list">
+        <%= f.submit "Save", class: "btn btn-primary" %>
+        <%= link_to "Cancel", social_nodes_path, class: "btn" %>
+      </div>
+    <% end %>
+  </div>
+</div>

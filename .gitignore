@@ -1,0 +1,26 @@
+*.gem
+*.rbc
+.bundle/
+.byebug_history
+.rspec_status
+.yardoc
+.DS_Store
+log/*.log
+log/*.pid
+tmp/
+vendor/bundle
+vendor/cache
+
+# Rails-specific
+/config/credentials/*.key
+/config/master.key
+/storage/*
+/public/assets
+
+# Local-only files
+/db/schema.rb.cache
+.env*
+!.env.example
+
+# Local Gemfile override — for monorepo dev against path: gems
+/Gemfile.local

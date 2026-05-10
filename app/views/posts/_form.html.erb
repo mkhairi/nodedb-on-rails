@@ -1,0 +1,22 @@
+<%= form_with model: post, local: true do |f| %>
+  <% if post.errors.any? %>
+    <div class="alert alert-danger">
+      <h4 class="alert-title"><%= pluralize(post.errors.count, "error") %></h4>
+      <ul class="mb-0">
+        <% post.errors.full_messages.each { |m| %><li><%= m %></li><% } %>
+      </ul>
+    </div>
+  <% end %>
+  <div class="mb-3">
+    <%= f.label :title, class: "form-label required" %>
+    <%= f.text_field :title, class: "form-control" %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :body, class: "form-label" %>
+    <%= f.text_area :body, rows: 10, class: "form-control" %>
+  </div>
+  <div class="btn-list">
+    <%= f.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", posts_path, class: "btn" %>
+  </div>
+<% end %>

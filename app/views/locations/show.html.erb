@@ -1,0 +1,29 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title"><%= @location.name %></h2>
+      <div class="text-secondary small"><code><%= @location.id %></code> · <%= @location.lat %>, <%= @location.lon %></div>
+    </div>
+    <div class="col-auto btn-list">
+      <%= link_to locations_path, class: "btn" do %><i class="ti ti-arrow-left me-1"></i> All<% end %>
+      <%= button_to location_path(@location.id), method: :delete, data: { turbo_confirm: "Sure?" }, class: "btn btn-ghost-danger" do %>
+        <i class="ti ti-trash me-1"></i> Delete
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div id="map" style="height: 420px;"></div>
+</div>
+
+<%= javascript_include_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" %>
+<%= stylesheet_link_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" %>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const lat = <%= @location.lat %>, lon = <%= @location.lon %>;
+    const m = L.map("map").setView([lat, lon], 10);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OSM" }).addTo(m);
+    L.marker([lat, lon]).addTo(m).bindPopup(<%= @location.name.to_json.html_safe %>).openPopup();
+  });
+</script>

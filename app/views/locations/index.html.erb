@@ -1,0 +1,80 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">Locations &amp; Map</h2>
+      <div class="text-secondary"><%= pluralize(@locations.size, "pin") %> · document_strict + Ruby haversine</div>
+    </div>
+    <div class="col-auto btn-list">
+      <%= link_to near_locations_path, class: "btn" do %><i class="ti ti-current-location me-1"></i> Find near<% end %>
+      <%= link_to new_location_path, class: "btn btn-primary" do %><i class="ti ti-plus me-1"></i> Pin location<% end %>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3 g-3">
+  <aside class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Pins</h3>
+      </div>
+      <% if @locations.any? %>
+        <div class="list-group list-group-flush" id="pin-list">
+          <% @locations.each do |loc| %>
+            <div class="list-group-item list-group-item-action px-3 py-2 d-flex align-items-center"
+                 data-loc-id="<%= loc.id %>" data-lat="<%= loc.lat %>" data-lon="<%= loc.lon %>" style="cursor: pointer;">
+              <div class="me-2"><span class="avatar avatar-xs bg-azure-lt"><i class="ti ti-map-pin"></i></span></div>
+              <div class="flex-fill">
+                <div class="fw-semibold"><%= loc.name.presence || "(unnamed)" %></div>
+                <div class="text-secondary small"><code><%= loc.lat %>, <%= loc.lon %></code></div>
+              </div>
+              <div class="ms-2">
+                <%= button_to location_path(loc.id), method: :delete, data: { turbo_confirm: "Sure?" }, class: "btn btn-sm btn-ghost-danger" do %>
+                  <i class="ti ti-trash"></i>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="card-body text-center text-secondary py-4">
+          <i class="ti ti-map-pin-off display-6 d-block mb-2"></i>
+          No pins yet. <%= link_to "Add one", new_location_path %>.
+        </div>
+      <% end %>
+    </div>
+  </aside>
+
+  <section class="col-lg-8">
+    <div class="card">
+      <div id="map" style="height: 600px;"></div>
+    </div>
+  </section>
+</div>
+
+<%= javascript_include_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" %>
+<%= stylesheet_link_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" %>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const m = L.map("map").setView([20, 0], 2);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OSM" }).addTo(m);
+    const points = <%= @locations.map { |l| { name: l.name, id: l.id, lat: l.lat, lon: l.lon } }.to_json.html_safe %>;
+    const markersById = {};
+    points.forEach(p => {
+      const mk = L.marker([p.lat, p.lon]).addTo(m).bindPopup(`<a href="/locations/${p.id}">${p.name || "(unnamed)"}</a>`);
+      markersById[p.id] = mk;
+    });
+    if (points.length) {
+      m.fitBounds(L.featureGroup(Object.values(markersById)).getBounds(), { padding: [30, 30], maxZoom: 6 });
+    }
+    document.querySelectorAll("#pin-list [data-loc-id]").forEach(el => {
+      el.addEventListener("click", evt => {
+        if (evt.target.closest(".btn")) return;
+        const id  = el.dataset.locId;
+        const lat = +el.dataset.lat;
+        const lon = +el.dataset.lon;
+        m.flyTo([lat, lon], 8, { duration: 0.5 });
+        markersById[id]?.openPopup();
+      });
+    });
+  });
+</script>

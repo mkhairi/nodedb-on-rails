@@ -1,0 +1,18 @@
+default: &default
+  adapter: nodedb
+  host: <%= ENV.fetch("NODEDB_HOST", "localhost") %>
+  port: <%= ENV.fetch("NODEDB_PORT", 6432) %>
+  database: <%= ENV.fetch("NODEDB_DB", "nodedb") %>
+  username: <%= ENV.fetch("NODEDB_USER", "nodedb") %>
+  password: <%= ENV.fetch("NODEDB_PASSWORD") { File.read(File.expand_path("~/.local/share/nodedb/.superuser_password")).strip rescue "" } %>
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+  database: nodedb_test
+
+production:
+  <<: *default
+  database: nodedb_production

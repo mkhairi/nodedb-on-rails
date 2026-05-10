@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+# Bootstrap the sample app:
+#   1. Create schema_migrations + ar_internal_metadata collections.
+#   2. Run any migration whose target collection is missing.
+#   3. Record every migration's version (idempotent).
+#
+# NodeDB's DROP COLLECTION soft-deletes the storage within a retention
+# window, so a fresh CREATE can resurrect old rows. We treat the "is the
+# data collection actually present?" check as the source of truth and use
+# `schema_migrations` purely for AR's `check_pending!` bookkeeping.
+require_relative "../config/environment"
+
+pool = ActiveRecord::Base.connection_pool
+sm   = pool.schema_migration
+im   = pool.internal_metadata
+conn = ActiveRecord::Base.connection
+
+puts "==> Creating schema_migrations + ar_internal_metadata"
+sm.create_table
+im.create_table
+im[:environment] ||= Rails.env
+
+migrations_dir = Rails.root.join("db/migrate")
+applied = sm.versions
+puts "    versions already tracked: #{applied.size}"
+
+Dir[migrations_dir.join("*.rb").to_s].sort.each do |path|
+  filename = File.basename(path)
+  version  = filename.split("_", 2).first
+
+  load path
+  klass_name = filename.sub(/\A\d+_/, "").sub(/\.rb\z/, "").camelize
+  klass = Object.const_get(klass_name)
+
+  begin
+    puts "==> #{filename} — migrate(:up)"
+    klass.new.migrate(:up)
+  rescue ActiveRecord::StatementInvalid => e
+    if e.message.match?(/already exists|already defined/i)
+      puts "    collection already exists, skipping"
+    else
+      raise
+    end
+  end
+
+  unless applied.include?(version)
+    sm.create_version(version)
+    applied << version
+  end
+end
+
+puts
+puts "==> Dumping db/schema.rb"
+schema_path = Rails.root.join("db/schema.rb")
+File.open(schema_path, "w:utf-8") do |io|
+  ActiveRecord::SchemaDumper.dump(pool, io)
+end
+puts "    wrote #{schema_path}"
+
+puts
+puts "Done."
+puts "  versions:           #{sm.versions.inspect}"
+puts "  collections present: #{(conn.collections - %w[schema_migrations ar_internal_metadata]).inspect}"
+puts
+puts "Run db/seeds.rb to populate:"
+puts "  mise x -- bundle exec ruby bin/rails runner db/seeds.rb"

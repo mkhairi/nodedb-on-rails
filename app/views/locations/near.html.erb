@@ -1,0 +1,50 @@
+<div class="page-header"><h2 class="page-title">Find near</h2></div>
+
+<div class="card mt-3">
+  <div class="card-body">
+    <%= form_with url: near_locations_path, method: :get, local: true, class: "row g-2" do |f| %>
+      <div class="col-md-3">
+        <%= f.label :lat, "Center lat", class: "form-label" %>
+        <%= f.number_field :lat, step: "any", value: @lat, class: "form-control" %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :lon, "Center lon", class: "form-label" %>
+        <%= f.number_field :lon, step: "any", value: @lon, class: "form-control" %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :meters, "Radius (m)", class: "form-label" %>
+        <%= f.number_field :meters, step: "any", value: @meters, class: "form-control" %>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <%= f.submit "Search", class: "btn btn-primary w-100" %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @hits.any? %>
+    <div class="card-body border-top">
+      <h3 class="card-title"><%= pluralize(@hits.size, "hit") %></h3>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-vcenter card-table">
+        <thead><tr><th>Name</th><th>Lat</th><th>Lon</th><th>Distance</th></tr></thead>
+        <tbody>
+        <% @hits.each do |h| %>
+          <tr>
+            <td><%= link_to h.name.presence || "(unnamed)", location_path(h.id) %></td>
+            <td><code><%= h.lat %></code></td>
+            <td><code><%= h.lon %></code></td>
+            <td>
+              <span class="badge bg-azure-lt">
+                <%= number_to_human((h.distance_m / 1000.0), units: { unit: "km" }, precision: 3) %>
+              </span>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="card-body text-center text-secondary py-4">No matches in that radius.</div>
+  <% end %>
+</div>

@@ -1,0 +1,50 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">Articles</h2>
+      <div class="text-secondary"><%= pluralize(@articles.size, "article") %></div>
+    </div>
+    <div class="col-auto">
+      <%= link_to new_article_path, class: "btn btn-primary" do %>
+        <i class="ti ti-plus me-1"></i> New article
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-body border-bottom py-3">
+    <%= form_with url: search_articles_path, method: :get, local: true, class: "row g-2" do |f| %>
+      <div class="col">
+        <%= f.text_field :q, value: @query, placeholder: "Search title…", class: "form-control" %>
+      </div>
+      <div class="col-auto"><%= f.submit "Search", class: "btn" %></div>
+    <% end %>
+  </div>
+  <% if @articles.any? %>
+    <div class="table-responsive">
+      <table class="table table-vcenter card-table">
+        <thead><tr><th>ID</th><th>Title</th><th class="w-1">Actions</th></tr></thead>
+        <tbody>
+          <% @articles.each do |article| %>
+            <tr>
+              <td class="text-secondary"><code><%= article.id&.first(8) %></code></td>
+              <td><%= link_to article.title, article %></td>
+              <td>
+                <div class="btn-list flex-nowrap">
+                  <%= link_to "Edit", edit_article_path(article), class: "btn btn-sm" %>
+                  <%= button_to "Delete", article_path(article), method: :delete, data: { turbo_confirm: "Sure?" }, class: "btn btn-sm btn-ghost-danger" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="card-body text-center text-secondary py-5">
+      <i class="ti ti-files-off display-4 d-block mb-2"></i>
+      No articles yet. <%= link_to "Write one", new_article_path %>.
+    </div>
+  <% end %>
+</div>

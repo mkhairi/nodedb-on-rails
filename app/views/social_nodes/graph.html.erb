@@ -1,0 +1,40 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">Graph + PageRank</h2>
+    </div>
+    <div class="col-auto">
+      <%= link_to social_nodes_path, class: "btn" do %><i class="ti ti-arrow-left me-1"></i> Back<% end %>
+    </div>
+  </div>
+</div>
+
+<% if @error %>
+  <div class="alert alert-danger mt-3"><i class="ti ti-alert-circle me-1"></i> <%= @error %></div>
+<% end %>
+
+<% sorted = @nodes.sort_by { |n| -(@pagerank[n.id] || 0.0) } %>
+<% max = sorted.map { |n| @pagerank[n.id] || 0.0 }.max || 1.0 %>
+
+<div class="card mt-3">
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table">
+      <thead><tr><th>Node</th><th>Name</th><th>Score</th><th>Bar</th></tr></thead>
+      <tbody>
+      <% sorted.each do |n| %>
+        <% score = @pagerank[n.id] || 0.0 %>
+        <tr>
+          <td><code><%= n.id %></code></td>
+          <td><%= n.name %></td>
+          <td><span class="badge bg-blue-lt"><%= score.round(5) %></span></td>
+          <td style="width: 30%;">
+            <div class="progress progress-sm">
+              <div class="progress-bar bg-azure" style="width: <%= ((score / max) * 100).round %>%"></div>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

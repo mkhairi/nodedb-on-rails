@@ -1,0 +1,72 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">Posts</h2>
+      <div class="text-secondary"><%= pluralize(@posts.size, "post") %> · powered by NodeDB FTS</div>
+    </div>
+    <div class="col-auto">
+      <%= link_to new_post_path, class: "btn btn-primary" do %>
+        <i class="ti ti-plus me-1"></i> New post
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-body border-bottom py-3">
+    <%= form_with url: search_posts_path, method: :get, local: true, class: "row g-2" do |f| %>
+      <div class="col">
+        <div class="input-icon">
+          <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+          <%= f.text_field :q, value: @query, placeholder: "Full-text search…", class: "form-control" %>
+        </div>
+      </div>
+      <div class="col-auto"><%= f.submit "Search", class: "btn btn-primary" %></div>
+    <% end %>
+  </div>
+
+  <% if @query.present? %>
+    <div class="card-body border-bottom">
+      <h3 class="card-title">FTS results — <%= @hits.size %> hit(s) for <em>“<%= @query %>”</em></h3>
+      <% if @hits.empty? %>
+        <p class="text-secondary mb-0">No matches.</p>
+      <% else %>
+        <div class="table-responsive">
+          <table class="table table-vcenter">
+            <thead><tr><th class="w-1">BM25</th><th>Title</th><th>Body</th></tr></thead>
+            <tbody>
+            <% @hits.each do |h| %>
+              <tr>
+                <td><span class="badge bg-blue-lt"><%= h[:score].round(3) %></span></td>
+                <td><%= link_to h[:post]&.title || "(missing)", post_path(h[:id]) %></td>
+                <td class="text-secondary"><%= truncate(h[:post]&.body.to_s, length: 80) %></td>
+              </tr>
+            <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @posts.any? %>
+    <div class="list-group list-group-flush">
+      <% @posts.each do |p| %>
+        <%= link_to post_path(p), class: "list-group-item list-group-item-action" do %>
+          <div class="row align-items-center">
+            <div class="col">
+              <strong><%= p.title %></strong>
+              <div class="text-secondary small"><%= truncate(p.body.to_s, length: 90) %></div>
+            </div>
+            <div class="col-auto text-secondary small"><i class="ti ti-chevron-right"></i></div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card-body text-center text-secondary py-5">
+      <i class="ti ti-message-off display-4 d-block mb-2"></i>
+      No posts yet. <%= link_to "Write one", new_post_path %>.
+    </div>
+  <% end %>
+</div>

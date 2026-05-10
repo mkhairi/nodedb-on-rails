@@ -1,0 +1,86 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">Social graph</h2>
+      <div class="text-secondary"><%= pluralize(@nodes.size, "node") %></div>
+    </div>
+    <div class="col-auto btn-list">
+      <%= link_to graph_social_nodes_path, class: "btn" do %><i class="ti ti-chart-radar me-1"></i> PageRank<% end %>
+      <%= link_to new_social_node_path, class: "btn btn-primary" do %><i class="ti ti-plus me-1"></i> Add node<% end %>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3 g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Add edge</h3></div>
+      <div class="card-body">
+        <%= form_with url: edge_social_nodes_path, method: :post, local: true do |f| %>
+          <div class="mb-3">
+            <%= f.label :from, class: "form-label" %>
+            <%= f.select :from, @nodes.map { |n| ["#{n.name} (#{n.id})", n.id] }, {}, { class: "form-select" } %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :to, class: "form-label" %>
+            <%= f.select :to, @nodes.map { |n| ["#{n.name} (#{n.id})", n.id] }, {}, { class: "form-select" } %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :edge_type, "Edge type", class: "form-label" %>
+            <%= f.text_field :edge_type, value: "follows", class: "form-control" %>
+          </div>
+          <%= f.submit "Connect", class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Traverse</h3></div>
+      <div class="card-body">
+        <%= form_with url: social_nodes_path, method: :get, local: true do |f| %>
+          <div class="mb-3">
+            <%= f.label :from, class: "form-label" %>
+            <%= f.select :from, @nodes.map { |n| ["#{n.name} (#{n.id})", n.id] }, { selected: @from }, { class: "form-select" } %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :depth, class: "form-label" %>
+            <%= f.number_field :depth, value: @depth, min: 1, max: 6, class: "form-control" %>
+          </div>
+          <%= f.submit "Traverse", class: "btn" %>
+        <% end %>
+
+        <% if @reachable %>
+          <hr>
+          <p class="mb-2 small text-secondary">From <code><%= @from %></code> at depth <%= @depth %> — <%= @reachable.size %> reachable</p>
+          <div>
+            <% @reachable.each do |id| %><span class="badge bg-blue-lt me-1"><%= id %></span><% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header"><h3 class="card-title">Nodes</h3></div>
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table">
+      <thead><tr><th>ID</th><th>Name</th><th class="w-1"></th></tr></thead>
+      <tbody>
+      <% @nodes.each do |n| %>
+        <tr>
+          <td><code><%= n.id %></code></td>
+          <td><%= n.name %></td>
+          <td>
+            <%= button_to social_node_path(n.id), method: :delete, data: { turbo_confirm: "Sure?" }, class: "btn btn-sm btn-ghost-danger" do %>
+              <i class="ti ti-trash"></i>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

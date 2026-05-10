@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NodeDB On Rails</title>
+    <%= csrf_meta_tags %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
+  </head>
+  <body>
+    <div class="page">
+      <header class="navbar navbar-expand-md d-print-none">
+        <div class="container-xl">
+          <h1 class="navbar-brand pe-0 pe-md-3">
+            <%= link_to root_path, class: "d-flex align-items-center text-reset text-decoration-none" do %>
+              <i class="ti ti-database me-2 text-primary"></i>
+              <span>NodeDB On Rails</span>
+              <span class="badge bg-yellow-lt ms-2">alpha</span>
+            <% end %>
+          </h1>
+          <div class="navbar-nav flex-row order-md-last">
+            <span class="d-none d-md-flex me-3 align-items-center text-secondary small">
+              Rails <%= Rails.version %>
+            </span>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="navbar-nav">
+              <% [
+                ["articles",  articles_path,      "ti-files",     "Articles"],
+                ["posts",     posts_path,         "ti-search",    "Posts (FTS)"],
+                ["locations", locations_path,     "ti-map-pin",   "Locations & Map"],
+                ["social",    social_nodes_path,  "ti-affiliate", "Social Graph"],
+                ["kv",        kv_sessions_path,   "ti-key",       "KV Store"]
+              ].each do |slug, path, icon, label| %>
+                <% active = current_page?(path) || (slug == "social" && controller_name == "social_nodes") %>
+                <li class="nav-item <%= 'active' if active %>">
+                  <%= link_to path, class: "nav-link" do %>
+                    <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti <%= icon %>"></i></span>
+                    <span class="nav-link-title"><%= label %></span>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-wrapper">
+        <div class="page-body">
+          <div class="container-xl">
+            <% flash.each do |key, msg| %>
+              <% color = { "notice" => "success", "alert" => "warning" }[key.to_s] || "info" %>
+              <div class="alert alert-<%= color %> alert-dismissible" role="alert">
+                <div class="d-flex">
+                  <div><i class="ti <%= color == 'success' ? 'ti-check' : 'ti-alert-circle' %> me-2"></i></div>
+                  <div><%= msg %></div>
+                </div>
+                <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+              </div>
+            <% end %>
+            <%= yield %>
+          </div>
+        </div>
+
+        <footer class="footer footer-transparent d-print-none">
+          <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+              <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                <ul class="list-inline list-inline-dots mb-0">
+                  <li class="list-inline-item">
+                    <a href="https://github.com/mkhairi/activerecord-nodedb-adapter" class="link-secondary">github</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
