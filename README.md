@@ -8,8 +8,17 @@
 >
 > Run on disposable data only.
 
-End-to-end demo proving `activerecord-nodedb-adapter` works against the
+End-to-end demo proving [`activerecord-nodedb-adapter`](https://github.com/mkhairi/activerecord-nodedb-adapter) works against the
 Rails 8.x request → controller → view → ActiveRecord → NodeDB pgwire stack.
+
+## Companion packages
+
+| Repo | Role |
+| ---- | ---- |
+| [`mkhairi/nodedb-ruby`](https://github.com/mkhairi/nodedb-ruby) | core — pgwire connection, type map, SQL builders |
+| [`mkhairi/activerecord-nodedb-adapter`](https://github.com/mkhairi/activerecord-nodedb-adapter) | Rails ActiveRecord adapter (this app's primary dependency) |
+| [`mkhairi/sequel-nodedb-adapter`](https://github.com/mkhairi/sequel-nodedb-adapter) | Sequel adapter (stub) |
+| [`mkhairi/nodedb-on-rails`](https://github.com/mkhairi/nodedb-on-rails) | **this app** — Rails 8 sample exercising every NodeDB engine |
 
 ## Stack
 
