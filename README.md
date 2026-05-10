@@ -25,7 +25,7 @@ Rails 8.x request → controller → view → ActiveRecord → NodeDB pgwire sta
 ## Layout
 
 ```
-sample_rails_app/
+nodedb-on-rails/
 ├── Gemfile                            # rails ~> 8.1, propshaft, puma, path gems
 ├── Rakefile
 ├── config.ru
