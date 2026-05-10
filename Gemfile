@@ -12,8 +12,8 @@ local_override = File.expand_path("Gemfile.local", __dir__)
 if File.exist?(local_override)
   eval_gemfile(local_override)
 else
-  gem "nodedb-ruby",                 git: "https://github.com/mkhairi/nodedb-ruby.git",                 branch: "main"
-  gem "activerecord-nodedb-adapter", git: "https://github.com/mkhairi/activerecord-nodedb-adapter.git", branch: "main"
+  gem "nodedb-ruby",                 github: "mkhairi/nodedb-ruby",                 branch: "main"
+  gem "activerecord-nodedb-adapter", github: "mkhairi/activerecord-nodedb-adapter", branch: "main"
 end
 
 group :development do
