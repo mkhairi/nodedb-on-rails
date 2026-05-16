@@ -66,6 +66,12 @@ now = Time.now.utc
   )
 end
 
+puts "==> embeddings (vector engine, dim 3)"
+Embedding::SAMPLES.each do |s|
+  conn.execute("DELETE FROM embeddings WHERE id = #{conn.quote(s[:id])}") rescue nil
+  Embedding.insert_vector(id: s[:id], title: s[:title], vec: s[:vec])
+end
+
 puts "==> kv_sessions"
 KvSession.kv_set("demo_session", "user_id:42")
 KvSession.kv_set("feature:flags", '{"new_ui":true,"beta":false}')
@@ -77,6 +83,7 @@ puts "  posts         : #{Post.unscoped.from(Post.table_name).select('id').to_a.
 puts "  locations     : #{Location.unscoped.from(Location.table_name).select('id').to_a.size}"
 puts "  social_nodes  : #{SocialNode.unscoped.from(SocialNode.table_name).select('id').to_a.size}"
 puts "  metrics       : #{conn.execute('SELECT id FROM metrics').to_a.size}"
+puts "  embeddings    : #{Embedding::SAMPLES.size} seeded (schemaless; not scan-countable)"
 puts "  kv_sessions   : #{conn.execute('SELECT key FROM kv_sessions').to_a.size}"
 puts
 puts "Done."

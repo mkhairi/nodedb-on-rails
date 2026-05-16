@@ -1,0 +1,88 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">Timeseries</h2>
+      <div class="text-secondary"><%= pluralize(@metrics.size, "recent point") %> · NodeDB timeseries engine (<code>metrics</code>)</div>
+    </div>
+  </div>
+</div>
+
+<% if @error %>
+  <div class="alert alert-warning mt-3"><%= @error %></div>
+<% end %>
+
+<div class="row mt-3 g-3">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Record a point</h3></div>
+      <div class="card-body">
+        <%= form_with url: metrics_path, method: :post, local: true, class: "row g-2" do |f| %>
+          <div class="col-5">
+            <%= f.text_field :host, value: "web-01", class: "form-control", placeholder: "host" %>
+          </div>
+          <div class="col-4">
+            <%= f.text_field :value, value: "0.5", class: "form-control", placeholder: "value" %>
+          </div>
+          <div class="col-3">
+            <%= f.submit "Add", class: "btn btn-primary w-100" %>
+          </div>
+        <% end %>
+        <p class="text-secondary small mt-2 mb-0">
+          Timestamp is set to <code>now()</code> server-side.
+        </p>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h3 class="card-title">Avg value / 1-minute bucket</h3>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+          <thead><tr><th>Bucket</th><th>Host</th><th class="text-end">Avg</th></tr></thead>
+          <tbody>
+            <% if @buckets.empty? %>
+              <tr><td colspan="3" class="text-secondary">
+                No aggregate rows. <code>AVG()</code>/<code>GROUP BY</code> needs the
+                <strong>pgwire</strong> transport (native gap — see
+                activerecord-nodedb-adapter docs/bugs/018, #45).
+              </td></tr>
+            <% else %>
+              <% @buckets.each do |b| %>
+                <tr>
+                  <td class="small"><code><%= b["bucket"] %></code></td>
+                  <td><%= b["host"] %></td>
+                  <td class="text-end"><code><%= b["avg_value"] %></code></td>
+                </tr>
+              <% end %>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Recent points</h3></div>
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+          <thead><tr><th>Timestamp</th><th>Host</th><th class="text-end">Value</th></tr></thead>
+          <tbody>
+            <% if @metrics.empty? %>
+              <tr><td colspan="3" class="text-secondary">No metrics yet — add one or run <code>bin/rails runner db/seeds.rb</code>.</td></tr>
+            <% else %>
+              <% @metrics.each do |m| %>
+                <tr>
+                  <td class="small"><code><%= m.ts %></code></td>
+                  <td><span class="badge bg-blue-lt"><%= m.host %></span></td>
+                  <td class="text-end"><code><%= m.value %></code></td>
+                </tr>
+              <% end %>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
