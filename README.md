@@ -87,6 +87,31 @@ bundle exec rails server -p 3737 -b 127.0.0.1
 
 Visit <http://127.0.0.1:3737/>.
 
+### Transports: pgwire (default) vs native
+
+The adapter speaks two transports. `database.yml` is env-driven and
+defaults to **pgwire**:
+
+| Env | Transport | Port | Use for |
+| --- | --------- | ---- | ------- |
+| _(default)_ | pgwire (libpq) | 6432 | setup, migrations, full app |
+| `NODEDB_TRANSPORT=native` | NodeDB binary, no libpq | 6433 | runtime, working engines |
+
+```bash
+# Setup / migrations — MUST be pgwire (default). Schema-tracking
+# (schema_migrations / ar_internal_metadata) can't be read back over
+# native yet — activerecord-nodedb-adapter docs/bugs/018, issue #45.
+bundle exec ruby bin/setup
+
+# Run the app over the native binary protocol (no libpq):
+NODEDB_TRANSPORT=native bundle exec rails server -p 3737 -b 127.0.0.1
+```
+
+Native runtime status (NodeDB v0.2.1): connection, document model CRUD,
+timeseries and graph work; KV / spatial / FTS / vector reads are limited
+by BUG-018 (document columns aren't projected over native). `/server_info`
+shows the active transport. Migrate over pgwire, then run over native.
+
 ### Monorepo development setup
 
 If you have the sister gem repos checked out alongside this one and want

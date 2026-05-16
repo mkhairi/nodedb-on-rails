@@ -1,7 +1,12 @@
 default: &default
   adapter: nodedb
   host: <%= ENV.fetch("NODEDB_HOST", "localhost") %>
-  port: <%= ENV.fetch("NODEDB_PORT", 6432) %>
+  # Transport: "pg" (pgwire/libpq, default) or "native" (NodeDB binary, 6433).
+  # Migrations/schema-tracking require pgwire (see activerecord-nodedb-adapter
+  # docs/bugs/018). Run setup/migrate with the default; opt into native at
+  # runtime with NODEDB_TRANSPORT=native.
+  transport: <%= ENV.fetch("NODEDB_TRANSPORT", "pg") %>
+  port: <%= ENV.fetch("NODEDB_PORT") { ENV["NODEDB_TRANSPORT"] == "native" ? 6433 : 6432 } %>
   database: <%= ENV.fetch("NODEDB_DB", "nodedb") %>
   username: <%= ENV.fetch("NODEDB_USER", "nodedb") %>
   password: <%= ENV.fetch("NODEDB_PASSWORD") { File.read(File.expand_path("~/.local/share/nodedb/.superuser_password")).strip rescue "" } %>
