@@ -1,0 +1,74 @@
+class ServerInfoController < ApplicationController
+  INTERNAL_COLLECTIONS = %w[schema_migrations ar_internal_metadata].freeze
+
+  def index
+    conn = ActiveRecord::Base.connection
+    pool = ActiveRecord::Base.connection_pool
+
+    cfg = pool.db_config.configuration_hash
+    @server = {
+      version:           safe_show(conn, "server_version"),
+      application_name:  safe_show(conn, "application_name"),
+      host:              cfg[:host] || pool.db_config.host,
+      port:              cfg[:port] || 6432,
+      database:          cfg[:database] || pool.db_config.database,
+      user:              cfg[:username] || cfg[:user],
+      adapter_name:      conn.adapter_name,
+      database_version:  conn.database_version,
+      prepared:          conn.prepared_statements,
+      ar_version:        ActiveRecord::VERSION::STRING,
+      rails_version:     Rails.version,
+      ruby_version:      RUBY_VERSION
+    }
+
+    @adapter_gem = {
+      nodedb_ruby:       gem_version("nodedb-ruby"),
+      ar_adapter:        gem_version("activerecord-nodedb-adapter"),
+      pg:                gem_version("pg")
+    }
+
+    @migrations = {
+      versions:          pool.schema_migration.versions,
+      environment:       pool.internal_metadata[:environment],
+      schema_sha1:       pool.internal_metadata[:schema_sha1]
+    }
+
+    @collections = conn.execute("SHOW COLLECTIONS").to_a.map do |row|
+      name = row["name"]
+      next if INTERNAL_COLLECTIONS.include?(name)
+      describe = conn.execute("DESCRIBE #{name}").to_a
+      engine   = describe.find { |r| r["field"] == "__storage" }&.fetch("type") || "schemaless"
+      cols     = describe.reject { |r| r["field"].to_s.start_with?("__") }
+      count    = safe_count(conn, name)
+      OpenStruct.new(
+        name:        name,
+        engine:      engine,
+        owner:       row["owner"],
+        created_at:  Time.at(row["created_at"].to_i),
+        column_count: cols.size - 1,  # drop the synthetic baseline id
+        columns:     cols.map { |c| "#{c["field"]}:#{c["type"]}" },
+        row_count:   count
+      )
+    end.compact.sort_by(&:name)
+
+    @internal = conn.execute("SHOW COLLECTIONS").to_a.select { |r| INTERNAL_COLLECTIONS.include?(r["name"]) }
+  end
+
+  private
+
+  def safe_show(conn, key)
+    conn.execute("SHOW #{key}").to_a.first&.values&.first
+  rescue StandardError
+    nil
+  end
+
+  def safe_count(conn, collection)
+    conn.execute("SELECT id FROM #{collection}").to_a.size
+  rescue StandardError
+    nil
+  end
+
+  def gem_version(name)
+    Gem.loaded_specs[name]&.version&.to_s
+  end
+end

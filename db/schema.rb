@@ -41,20 +41,6 @@ ActiveRecord::Schema[8.1].define(version: 6) do
     t.column :body, "text"
   end
 
-  create_document_strict "schema_migrations_clean" do |t|
-    t.column :version, "TEXT PRIMARY KEY"
-  end
-
-  create_document_strict "smoke_vec_4d89a7" do |t|
-    t.column :id, "TEXT PRIMARY KEY"
-    t.column :embedding, "VECTOR(3)"
-  end
-
-  create_document_strict "smoke_vec_6227fb" do |t|
-    t.column :id, "TEXT PRIMARY KEY"
-    t.column :embedding, "VECTOR(3)"
-  end
-
   create_collection "social_nodes" do |t|
     t.column :document, "JSON"
   end

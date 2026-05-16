@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   root "articles#index"
 
+  get "/server_info", to: "server_info#index", as: :server_info
+
   resources :articles do
     collection do
       get :search

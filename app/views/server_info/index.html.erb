@@ -1,0 +1,186 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">Server info</h2>
+      <div class="text-secondary">NodeDB connection, adapter, migrations, and collection state.</div>
+    </div>
+    <div class="col-auto">
+      <a class="btn" href="<%= server_info_path %>"><i class="ti ti-refresh me-1"></i> Refresh</a>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3 g-3">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">NodeDB server</h3></div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-5 text-secondary">Version</dt>
+          <dd class="col-7"><code><%= @server[:version] %></code></dd>
+
+          <dt class="col-5 text-secondary">Host : Port</dt>
+          <dd class="col-7"><code><%= @server[:host] %>:<%= @server[:port] %></code></dd>
+
+          <dt class="col-5 text-secondary">Database</dt>
+          <dd class="col-7"><code><%= @server[:database] %></code></dd>
+
+          <dt class="col-5 text-secondary">User</dt>
+          <dd class="col-7"><code><%= @server[:user] %></code></dd>
+
+          <dt class="col-5 text-secondary">application_name</dt>
+          <dd class="col-7"><code><%= @server[:application_name].presence || "(unset)" %></code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Adapter + runtime</h3></div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-5 text-secondary">Adapter</dt>
+          <dd class="col-7"><code><%= @server[:adapter_name] %></code></dd>
+
+          <dt class="col-5 text-secondary">database_version stub</dt>
+          <dd class="col-7"><code><%= @server[:database_version] %></code></dd>
+
+          <dt class="col-5 text-secondary">Prepared statements</dt>
+          <dd class="col-7">
+            <% if @server[:prepared] %>
+              <span class="badge bg-blue-lt">enabled</span>
+            <% else %>
+              <span class="badge bg-orange-lt">disabled (BUG-005)</span>
+            <% end %>
+          </dd>
+
+          <dt class="col-5 text-secondary">ActiveRecord</dt>
+          <dd class="col-7"><code><%= @server[:ar_version] %></code></dd>
+
+          <dt class="col-5 text-secondary">Rails</dt>
+          <dd class="col-7"><code><%= @server[:rails_version] %></code></dd>
+
+          <dt class="col-5 text-secondary">Ruby</dt>
+          <dd class="col-7"><code><%= @server[:ruby_version] %></code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3 g-3">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Gems</h3></div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-6 text-secondary">
+            <a class="link-secondary" href="https://github.com/mkhairi/nodedb-ruby">nodedb-ruby</a>
+          </dt>
+          <dd class="col-6"><code><%= @adapter_gem[:nodedb_ruby] || "(not loaded)" %></code></dd>
+
+          <dt class="col-6 text-secondary">
+            <a class="link-secondary" href="https://github.com/mkhairi/activerecord-nodedb-adapter">activerecord-nodedb-adapter</a>
+          </dt>
+          <dd class="col-6"><code><%= @adapter_gem[:ar_adapter] || "(not loaded)" %></code></dd>
+
+          <dt class="col-6 text-secondary">pg</dt>
+          <dd class="col-6"><code><%= @adapter_gem[:pg] || "(not loaded)" %></code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Migrations</h3></div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-5 text-secondary">Applied</dt>
+          <dd class="col-7"><code><%= @migrations[:versions].size %></code></dd>
+
+          <dt class="col-5 text-secondary">Versions</dt>
+          <dd class="col-7">
+            <% @migrations[:versions].each do |v| %>
+              <span class="badge bg-blue-lt me-1"><%= v %></span>
+            <% end %>
+          </dd>
+
+          <dt class="col-5 text-secondary">Environment</dt>
+          <dd class="col-7"><code><%= @migrations[:environment] || "(unset)" %></code></dd>
+
+          <dt class="col-5 text-secondary">schema_sha1</dt>
+          <dd class="col-7"><code><%= @migrations[:schema_sha1] || "(unset)" %></code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">
+    <h3 class="card-title">Collections <span class="badge bg-blue-lt ms-2"><%= @collections.size %></span></h3>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Engine</th>
+          <th>Owner</th>
+          <th>Created</th>
+          <th class="text-end">Rows</th>
+          <th class="text-end">Cols</th>
+          <th>Schema</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @collections.each do |c| %>
+          <tr>
+            <td><code><%= c.name %></code></td>
+            <td>
+              <span class="badge bg-<%= engine_color(c.engine) %>-lt"><%= c.engine %></span>
+            </td>
+            <td class="text-secondary small"><%= c.owner %></td>
+            <td class="text-secondary small"><%= c.created_at.iso8601 %></td>
+            <td class="text-end"><code><%= c.row_count || "?" %></code></td>
+            <td class="text-end"><code><%= c.column_count %></code></td>
+            <td class="small">
+              <% c.columns.each do |col| %>
+                <code class="me-1"><%= col %></code>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header"><h3 class="card-title">Internal collections</h3></div>
+  <div class="card-body small text-secondary">
+    Managed by <a href="https://github.com/mkhairi/activerecord-nodedb-adapter">activerecord-nodedb-adapter</a> for Rails migration tracking.
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table">
+      <thead><tr><th>Name</th><th>Owner</th><th>Created</th></tr></thead>
+      <tbody>
+        <% @internal.each do |r| %>
+          <tr>
+            <td><code><%= r["name"] %></code></td>
+            <td class="text-secondary small"><%= r["owner"] %></td>
+            <td class="text-secondary small"><%= Time.at(r["created_at"].to_i).iso8601 %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="text-secondary small mt-3 mb-4">
+  Tracked NodeDB upstream limitations:
+  <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/tree/main/docs/bugs">docs/bugs</a> ·
+  <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues">issues</a>
+</div>
