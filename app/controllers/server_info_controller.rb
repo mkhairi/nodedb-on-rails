@@ -6,11 +6,15 @@ class ServerInfoController < ApplicationController
     pool = ActiveRecord::Base.connection_pool
 
     cfg = pool.db_config.configuration_hash
+    native = conn.respond_to?(:native_transport?) && conn.native_transport?
+    transport = native ? "native" : "pg"
     @server = {
       version:           safe_show(conn, "server_version"),
       application_name:  safe_show(conn, "application_name"),
+      transport:         transport,
+      transport_detail:  native ? "NodeDB binary (MessagePack), no libpq" : "PostgreSQL wire via libpq/pg",
       host:              cfg[:host] || pool.db_config.host,
-      port:              cfg[:port] || 6432,
+      port:              cfg[:port] || (native ? 6433 : 6432),
       database:          cfg[:database] || pool.db_config.database,
       user:              cfg[:username] || cfg[:user],
       adapter_name:      conn.adapter_name,
