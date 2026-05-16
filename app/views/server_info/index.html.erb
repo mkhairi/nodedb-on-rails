@@ -19,6 +19,16 @@
           <dt class="col-5 text-secondary">Version</dt>
           <dd class="col-7"><code><%= @server[:version] %></code></dd>
 
+          <dt class="col-5 text-secondary">Transport</dt>
+          <dd class="col-7">
+            <% if @server[:transport] == "native" %>
+              <span class="badge bg-green-lt">native</span>
+            <% else %>
+              <span class="badge bg-blue-lt">pgwire</span>
+            <% end %>
+            <span class="text-secondary small ms-1"><%= @server[:transport_detail] %></span>
+          </dd>
+
           <dt class="col-5 text-secondary">Host : Port</dt>
           <dd class="col-7"><code><%= @server[:host] %>:<%= @server[:port] %></code></dd>
 
