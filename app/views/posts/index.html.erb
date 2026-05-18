@@ -33,11 +33,10 @@
       <% else %>
         <div class="table-responsive">
           <table class="table table-vcenter">
-            <thead><tr><th class="w-1">BM25</th><th>Title</th><th>Body</th></tr></thead>
+            <thead><tr><th>Title</th><th>Body</th></tr></thead>
             <tbody>
             <% @hits.each do |h| %>
               <tr>
-                <td><span class="badge bg-blue-lt"><%= h[:score].round(3) %></span></td>
                 <td><%= link_to h[:post]&.title || "(missing)", post_path(h[:id]) %></td>
                 <td class="text-secondary"><%= truncate(h[:post]&.body.to_s, length: 80) %></td>
               </tr>

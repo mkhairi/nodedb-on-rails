@@ -12,7 +12,7 @@ class PostsController < ApplicationController
     @hits = fts.filter_map do |row|
       post = Post.where("id = ?", row["id"]).first
       next unless post
-      { id: row["id"], score: row["score"], post: post }
+      { id: row["id"], post: post }
     end
   end
 

@@ -17,6 +17,11 @@ ActiveRecord::Schema[8.1].define(version: 7) do
     t.column :body, "text"
   end
 
+  create_spatial "b011_1779080516" do |t|
+    t.column :id, "TEXT PRIMARY KEY"
+    t.column :geom, "GEOMETRY"
+  end
+
   create_collection "embeddings" do |t|
     t.column :document, "JSON"
   end
