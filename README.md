@@ -98,19 +98,22 @@ defaults to **pgwire**:
 | `NODEDB_TRANSPORT=native` | NodeDB binary, no libpq | 6433 | runtime, working engines |
 
 ```bash
-# Setup / migrations — MUST be pgwire (default). Schema-tracking
-# (schema_migrations / ar_internal_metadata) can't be read back over
-# native yet — activerecord-nodedb-adapter docs/bugs/018, issue #45.
+# Setup / migrations run over either transport (default pgwire).
+# Schema-tracking over native works since adapter 0.1.0.alpha.5
+# (the result shim normalises the document blob).
 bundle exec ruby bin/setup
 
 # Run the app over the native binary protocol (no libpq):
 NODEDB_TRANSPORT=native bundle exec rails server -p 3737 -b 127.0.0.1
 ```
 
-Native runtime status (NodeDB v0.2.1): connection, document model CRUD,
-timeseries and graph work; KV / spatial / FTS / vector reads are limited
-by BUG-018 (document columns aren't projected over native). `/server_info`
-shows the active transport. Migrate over pgwire, then run over native.
+Native runtime status (2026-05-18 upstream build, adapter
+0.1.0.alpha.6): connection, schema-tracking, document model CRUD,
+timeseries, graph, **spatial and FTS** work. **KV and vector reads**
+remain limited by BUG-018 (those engines' columns aren't projected
+over native). `feature_smoke` parity: pgwire 21/21, native 17/19.
+`/server_info` shows the active transport. See
+activerecord-nodedb-adapter `docs/bugs/018`, issue #45.
 
 ### Monorepo development setup
 
