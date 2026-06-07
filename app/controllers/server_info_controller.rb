@@ -65,6 +65,7 @@ class ServerInfoController < ApplicationController
     @ops_memory  = safe_show_array(conn, :show_memory)
     @ops_roles   = safe_show_array(conn, :show_roles)
     @ops_tenant  = safe_show_tenant(conn, 0)
+    @ops_native_blocked = native && @ops_stats.empty? && @ops_metrics.empty? && @ops_memory.empty?
   end
 
   private
