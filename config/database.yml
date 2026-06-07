@@ -16,7 +16,10 @@ development:
 
 test:
   <<: *default
-  database: nodedb_test
+  # NodeDB single-tenant doesn't expose a separate test database; the
+  # minitest suite shares the live development daemon. Override with
+  # NODEDB_DB=<name> if a multi-DB build is available.
+  database: <%= ENV.fetch("NODEDB_DB", "nodedb") %>
 
 production:
   <<: *default
