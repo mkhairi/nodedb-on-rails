@@ -107,9 +107,10 @@ bundle exec ruby bin/setup
 NODEDB_TRANSPORT=native bundle exec rails server -p 3737 -b 127.0.0.1
 ```
 
-Native runtime status (2026-05-18 upstream build, adapter
-0.1.0.alpha.6): connection, schema-tracking, document model CRUD,
-timeseries, graph, **spatial and FTS** work. **KV and vector reads**
+Native runtime status (NodeDB v0.3.0 release `25040fdf`, adapter
+`0.1.0.alpha.7`, retested 2026-06-07): connection, schema-tracking,
+document model CRUD, timeseries, graph (traversal + pagerank), spatial
+roundtrip, and FTS (search + fuzzy) all work. **KV and vector reads**
 remain limited by BUG-018 (those engines' columns aren't projected
 over native). `feature_smoke` parity: pgwire 21/21, native 17/19.
 `/server_info` shows the active transport. See
