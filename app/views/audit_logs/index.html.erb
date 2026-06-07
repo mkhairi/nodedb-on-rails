@@ -1,0 +1,108 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">
+        Audit logs
+        <span class="badge bg-yellow-lt ms-2">EXPERIMENTAL · BITEMPORAL</span>
+      </h2>
+      <div class="text-secondary">
+        Demonstrates NodeDB v0.3.0's <code>BITEMPORAL</code> collection
+        modifier surfaced through the adapter's new
+        <code>create_collection ..., bitemporal: true</code>. Writes
+        flow through ActiveRecord; reads bypass the model and unwrap
+        the raw <code>{data,id}</code> blob shape returned by NodeDB
+        v0.3.0 (BUG-018 territory). Once upstream projects virtual
+        columns out, this controller can collapse to plain AR queries.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="alert alert-danger d-flex align-items-start mt-3">
+  <i class="ti ti-alert-triangle me-2 mt-1"></i>
+  <div>
+    <strong>Bitemporal read path is broken upstream — table will stay empty.</strong>
+    NodeDB v0.3.0 accepts the <code>CREATE COLLECTION … BITEMPORAL</code>
+    DDL and INSERTs through ActiveRecord <em>appear</em> to succeed,
+    but every form of SELECT (plain, scoped, <code>AS OF SYSTEM TIME NOW()</code>,
+    <code>AS OF SYSTEM TIME &lt;ms&gt;</code>) returns zero rows. This
+    demo ships to exercise the new
+    <code>create_collection ..., bitemporal: true</code> surface and
+    document the gap — it is not a working audit log today. Tracked
+    upstream as BUG-021 (filed alongside this PR).
+    See <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues/45">issue #45 (BUG-018)</a>
+    for the closely-related <code>{data,id}</code> blob projection
+    issue on non-bitemporal native reads. <code>AS OF SYSTEM TIME</code>
+    is not wired into AR Relation; raw SQL only when upstream lands
+    the read path.
+  </div>
+</div>
+
+<%= form_with url: audit_logs_path, method: :post, local: true, class: "card mt-3" do |f| %>
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col-md-3">
+        <%= f.label :actor, class: "form-label" %>
+        <%= f.text_field :actor, class: "form-control", placeholder: "user@example.com" %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :action_name, "Action", class: "form-label" %>
+        <%= f.text_field :action_name, class: "form-control", placeholder: "viewed" %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :target, class: "form-label" %>
+        <%= f.text_field :target, class: "form-control", placeholder: "/articles/42" %>
+      </div>
+      <div class="col-md-3">
+        <%= f.label :context, class: "form-label" %>
+        <%= f.text_field :context, class: "form-control", placeholder: "{}" %>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer text-end">
+    <%= f.submit "Record audit entry", class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<div class="card mt-3">
+  <div class="card-header">
+    <h3 class="card-title">Recent entries</h3>
+    <div class="text-secondary small ms-auto"><%= @logs.size %> rows · post-unwrap</div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-vcenter card-table">
+      <thead>
+        <tr>
+          <th>Recorded at</th>
+          <th>Actor</th>
+          <th>Action</th>
+          <th>Target</th>
+          <th>Context</th>
+          <th>Document id</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @logs.each do |log| %>
+          <tr>
+            <td class="text-secondary small"><%= log[:recorded_at] %></td>
+            <td><%= log[:actor] %></td>
+            <td><span class="badge bg-blue-lt"><%= log[:action] %></span></td>
+            <td><code><%= log[:target] %></code></td>
+            <td class="text-secondary small"><code><%= log[:context] %></code></td>
+            <td class="text-secondary small"><code><%= log[:id] || log[:_blob_id] %></code></td>
+          </tr>
+        <% end %>
+        <% if @logs.empty? %>
+          <tr>
+            <td colspan="6" class="text-secondary text-center">
+              Empty — INSERTs are accepted but reads return zero rows
+              (NodeDB v0.3.0 bitemporal read-path bug, tracked as BUG-021).
+              Try the standard non-bitemporal collections in the sidebar
+              for working CRUD demos.
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
