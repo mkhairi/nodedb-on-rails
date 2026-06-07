@@ -189,6 +189,122 @@
   </div>
 </div>
 
+<h2 class="mt-4">
+  Operations <span class="badge bg-azure-lt ms-2">NodeDB v0.3.0</span>
+</h2>
+<div class="text-secondary">
+  Surfaced by <code>connection.show_stats</code>,
+  <code>show_metrics</code>, <code>show_memory</code>, and
+  <code>show_tenant(0)</code> — adapter helpers shipped in
+  <code>activerecord-nodedb-adapter 0.1.0.alpha.8</code>.
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">SHOW STATS</h3>
+        <div class="text-secondary small ms-auto"><%= @ops_stats.size %> rows</div>
+      </div>
+      <div class="table-responsive" style="max-height: 320px;">
+        <table class="table table-vcenter table-sm card-table">
+          <thead><tr><th>Name</th><th class="text-end">Value</th></tr></thead>
+          <tbody>
+            <% @ops_stats.each do |r| %>
+              <tr>
+                <td class="text-secondary"><%= r["name"] %></td>
+                <td class="text-end"><code><%= r["value"] %></code></td>
+              </tr>
+            <% end %>
+            <% if @ops_stats.empty? %>
+              <tr><td colspan="2" class="text-secondary text-center">—</td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">SHOW METRICS</h3>
+        <div class="text-secondary small ms-auto"><%= @ops_metrics.size %> rows</div>
+      </div>
+      <div class="table-responsive" style="max-height: 320px;">
+        <table class="table table-vcenter table-sm card-table">
+          <thead><tr><th>Name</th><th class="text-end">Value</th></tr></thead>
+          <tbody>
+            <% @ops_metrics.each do |r| %>
+              <tr>
+                <td class="text-secondary"><%= r["name"] %></td>
+                <td class="text-end"><code><%= r["value"] %></code></td>
+              </tr>
+            <% end %>
+            <% if @ops_metrics.empty? %>
+              <tr><td colspan="2" class="text-secondary text-center">—</td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">SHOW MEMORY</h3>
+        <div class="text-secondary small ms-auto">Per-engine memory budget snapshot</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+          <thead>
+            <tr>
+              <th>Engine</th>
+              <th class="text-end">Allocated</th>
+              <th class="text-end">Limit</th>
+              <th class="text-end">Peak</th>
+              <th class="text-end">Rejections</th>
+              <th class="text-end">Util %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @ops_memory.each do |r| %>
+              <tr>
+                <td><code><%= r["engine"] %></code></td>
+                <td class="text-end"><%= r["allocated_bytes"] %></td>
+                <td class="text-end"><%= r["limit_bytes"] %></td>
+                <td class="text-end"><%= r["peak_bytes"] %></td>
+                <td class="text-end"><%= r["rejections"] %></td>
+                <td class="text-end"><%= r["utilization_percent"] %></td>
+              </tr>
+            <% end %>
+            <% if @ops_memory.empty? %>
+              <tr><td colspan="6" class="text-secondary text-center">—</td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <% if @ops_tenant %>
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">SHOW TENANT 0 <span class="badge bg-azure-lt ms-2">default tenant</span></h3>
+          <div class="text-secondary small ms-auto">conn.show_tenant(0)</div>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <% @ops_tenant.each do |k, v| %>
+              <dt class="col-3 text-secondary"><%= k %></dt>
+              <dd class="col-9"><code><%= v %></code></dd>
+            <% end %>
+          </dl>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
 <div class="text-secondary small mt-3 mb-4">
   Tracked NodeDB upstream limitations:
   <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/tree/main/docs/bugs">docs/bugs</a> ·

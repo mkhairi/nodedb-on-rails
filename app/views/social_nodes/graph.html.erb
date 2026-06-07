@@ -13,6 +13,41 @@
   <div class="alert alert-danger mt-3"><i class="ti ti-alert-circle me-1"></i> <%= @error %></div>
 <% end %>
 
+<% if @stats %>
+  <div class="card mt-3">
+    <div class="card-header">
+      <h3 class="card-title">Graph stats <span class="badge bg-azure-lt ms-2">NodeDB v0.3.0</span></h3>
+      <div class="text-secondary small ms-auto">SHOW GRAPH STATS — persistent O(1) edge-store counters</div>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="text-secondary">Nodes</div>
+          <div class="h2 mb-0"><%= @stats["node_count"] %></div>
+        </div>
+        <div class="col-md-3">
+          <div class="text-secondary">Edges</div>
+          <div class="h2 mb-0"><%= @stats["edge_count"] %></div>
+        </div>
+        <div class="col-md-3">
+          <div class="text-secondary">Distinct labels</div>
+          <div class="h2 mb-0"><%= @stats["distinct_label_count"] %></div>
+        </div>
+        <div class="col-md-3">
+          <div class="text-secondary">Label breakdown</div>
+          <% if @stats_labels.any? %>
+            <% @stats_labels.each do |entry| %>
+              <span class="badge bg-blue-lt me-1"><%= entry["label"] %> · <%= entry["count"] %></span>
+            <% end %>
+          <% else %>
+            <span class="text-secondary">—</span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
 <% sorted = @nodes.sort_by { |n| -(@pagerank[n.id] || 0.0) } %>
 <% max = sorted.map { |n| @pagerank[n.id] || 0.0 }.max || 1.0 %>
 

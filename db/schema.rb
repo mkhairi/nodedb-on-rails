@@ -10,11 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 7) do
+ActiveRecord::Schema[8.1].define(version: 8) do
   create_document_strict "articles" do |t|
     t.column :id, "TEXT PRIMARY KEY"
     t.column :title, "text"
     t.column :body, "text"
+  end
+
+  create_document_strict "audit_logs" do |t|
+    t.column :id, "TEXT PRIMARY KEY"
+    t.column :actor, "text"
+    t.column :action, "text"
+    t.column :target, "text"
+    t.column :context, "text"
+    t.column :recorded_at, "text"
   end
 
   create_collection "embeddings" do |t|
