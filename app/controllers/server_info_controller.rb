@@ -63,6 +63,7 @@ class ServerInfoController < ApplicationController
     @ops_stats   = safe_show_array(conn, :show_stats)
     @ops_metrics = safe_show_array(conn, :show_metrics)
     @ops_memory  = safe_show_array(conn, :show_memory)
+    @ops_roles   = safe_show_array(conn, :show_roles)
     @ops_tenant  = safe_show_tenant(conn, 0)
   end
 
