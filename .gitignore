@@ -5,6 +5,7 @@
 .rspec_status
 .yardoc
 .DS_Store
+.playwright-mcp
 log/*.log
 log/*.pid
 tmp/

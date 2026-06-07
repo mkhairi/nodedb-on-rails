@@ -194,8 +194,9 @@
 </h2>
 <div class="text-secondary">
   Surfaced by <code>connection.show_stats</code>,
-  <code>show_metrics</code>, <code>show_memory</code>, and
-  <code>show_tenant(0)</code> — adapter helpers shipped in
+  <code>show_metrics</code>, <code>show_memory</code>,
+  <code>show_roles</code>, and <code>show_tenant(0)</code> —
+  adapter helpers shipped in
   <code>activerecord-nodedb-adapter 0.1.0.alpha.8</code>.
 </div>
 
@@ -285,8 +286,49 @@
     </div>
   </div>
 
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">SHOW ROLES</h3>
+        <div class="text-secondary small ms-auto"><%= @ops_roles.size %> rows · defined roles</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter table-sm card-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Tenant</th>
+              <th>Parent</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @ops_roles.each do |r| %>
+              <tr>
+                <td><code><%= r["name"] %></code></td>
+                <td class="text-secondary"><%= r["tenant_id"] %></td>
+                <td class="text-secondary"><%= r["parent"] %></td>
+                <td class="text-secondary small"><%= r["created_at"] %></td>
+              </tr>
+            <% end %>
+            <% if @ops_roles.empty? %>
+              <tr>
+                <td colspan="4" class="text-secondary text-center small">
+                  No roles defined yet — use
+                  <code>CREATE ROLE &lt;name&gt;</code> over psql or a
+                  superuser session. NodeDB v0.3.0 also accepts
+                  <code>WITH ADMIN</code> on auth DDL.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <% if @ops_tenant %>
-    <div class="col-12">
+    <div class="col-lg-6">
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">SHOW TENANT 0 <span class="badge bg-azure-lt ms-2">default tenant</span></h3>
@@ -295,8 +337,8 @@
         <div class="card-body">
           <dl class="row mb-0">
             <% @ops_tenant.each do |k, v| %>
-              <dt class="col-3 text-secondary"><%= k %></dt>
-              <dd class="col-9"><code><%= v %></code></dd>
+              <dt class="col-4 text-secondary"><%= k %></dt>
+              <dd class="col-8"><code><%= v %></code></dd>
             <% end %>
           </dl>
         </div>
