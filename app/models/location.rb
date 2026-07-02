@@ -7,8 +7,6 @@ class Location < ApplicationRecord
   attribute :lat,  :float
   attribute :lon,  :float
 
-  default_scope { select("id, name, lat, lon") }
-
   validates :name, presence: true
   validates :lat,  presence: true, numericality: true
   validates :lon,  presence: true, numericality: true

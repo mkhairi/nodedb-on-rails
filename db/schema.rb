@@ -17,7 +17,7 @@ ActiveRecord::Schema[8.1].define(version: 8) do
     t.column :body, "text"
   end
 
-  create_document_strict "audit_logs" do |t|
+  create_collection "audit_logs" do |t|
     t.column :id, "TEXT PRIMARY KEY"
     t.column :actor, "text"
     t.column :action, "text"
