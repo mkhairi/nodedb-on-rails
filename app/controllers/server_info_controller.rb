@@ -57,15 +57,16 @@ class ServerInfoController < ApplicationController
 
     @internal = conn.execute("SHOW COLLECTIONS").to_a.select { |r| INTERNAL_COLLECTIONS.include?(r["name"]) }
 
-    # NodeDB v0.3.0 operational SHOW commands. Each returns Array<Hash>;
+    # NodeDB operational SHOW commands. Each returns Array<Hash>;
     # the helpers fail closed (`safe_show_array`) so a stricter NodeDB
     # build or a non-superuser session can't blank the whole page.
+    # Real row sets on both transports since upstream fixed native
+    # SHOW routing (BUG-022).
     @ops_stats   = safe_show_array(conn, :show_stats)
     @ops_metrics = safe_show_array(conn, :show_metrics)
     @ops_memory  = safe_show_array(conn, :show_memory)
     @ops_roles   = safe_show_array(conn, :show_roles)
     @ops_tenant  = safe_show_tenant(conn, 0)
-    @ops_native_blocked = native && @ops_stats.empty? && @ops_metrics.empty? && @ops_memory.empty?
   end
 
   private

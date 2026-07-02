@@ -200,24 +200,6 @@
   <code>activerecord-nodedb-adapter 0.1.0.alpha.8</code>.
 </div>
 
-<% if @ops_native_blocked %>
-  <div class="alert alert-warning d-flex align-items-start mt-3">
-    <i class="ti ti-alert-triangle me-2 mt-1"></i>
-    <div>
-      <strong>STATS / METRICS / MEMORY / ROLES are empty over the native transport.</strong>
-      NodeDB v0.3.0's native protocol routes <code>SHOW &lt;command&gt;</code>
-      through the session-parameter handler instead of the DDL router
-      that pgwire uses (upstream
-      <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues/67">BUG-022</a>).
-      Pgwire is unaffected — relaunch the app with
-      <code>NODEDB_TRANSPORT=pg</code> (or unset) to see the live
-      counters. <code>SHOW TENANT 0</code> still works over native
-      because the session-parameter fallback resolves it via the
-      current session's tenant.
-    </div>
-  </div>
-<% end %>
-
 <div class="row g-3 mt-1">
   <div class="col-lg-6">
     <div class="card">

@@ -35,6 +35,9 @@ class FeatureSmoke
       section_spatial_engine
       section_fts_engine
       section_vector_engine
+      section_idiomatic_where
+      section_natural_key_pk
+      section_bitemporal_audit
     ]
   end
 
@@ -174,11 +177,86 @@ class FeatureSmoke
     record("graph.pagerank", (pr.length > 0 ? :ok : :fail), "rows=#{pr.length}")
   end
 
-  # Sample app uses document_strict for locations (BUG-011/012 in spatial engine).
-  # The smoke now exercises plain lat/lon round-trip + Ruby haversine.
+  # Idiomatic AR hash-conditions — silently returned empty before the
+  # adapter's BUG-025 dequalification rewrite; this section is the
+  # regression canary at the app level.
+  def section_idiomatic_where
+    puts
+    puts "=== Idiomatic ActiveRecord (hash-where / conditional count) ==="
+    Article.where(title: "smoke_where").each(&:destroy)
+    a = Article.create!(title: "smoke_where", body: "dequalifier canary")
+    found = Article.where(title: "smoke_where").to_a
+    record("ar.hash_where", (found.map(&:id) == [a.id] ? :ok : :fail), "rows=#{found.size}")
+    record("ar.conditional_count", (Article.where(title: "smoke_where").count == 1 ? :ok : :fail))
+    record("ar.find_by", (Article.find_by(title: "smoke_where")&.id == a.id ? :ok : :fail))
+    a.destroy
+  end
+
+  # Natural-key PRIMARY KEY on a non-`id` column — second INSERT used to
+  # collide on an empty internal id (fixed upstream on 3a06321e).
+  def section_natural_key_pk
+    puts
+    puts "=== Natural-key PK (document_strict, non-id column) ==="
+    coll = "smoke_sku_#{SecureRandom.hex(3)}"
+    @conn.create_collection(coll, engine: :document_strict, id: false) do |t|
+      t.text :sku, primary_key: true
+      t.text :label
+    end
+    @conn.execute("INSERT INTO #{coll} (sku, label) VALUES ('sku-a', 'first')")
+    @conn.execute("INSERT INTO #{coll} (sku, label) VALUES ('sku-b', 'second')")
+    rows = @conn.select_all("SELECT sku FROM #{coll}").to_a
+    record("natural_pk.two_inserts", (rows.size == 2 ? :ok : :fail), "rows=#{rows.size}")
+    begin
+      @conn.execute("INSERT INTO #{coll} (sku, label) VALUES ('sku-a', 'dupe')")
+      record("natural_pk.dup_rejected", :fail, "duplicate accepted")
+    rescue ActiveRecord::StatementInvalid
+      record("natural_pk.dup_rejected", :ok)
+    end
+  ensure
+    @conn.drop_collection(coll, if_exists: true) rescue nil
+  end
+
+  # BITEMPORAL collection: model reads + AS OF SYSTEM TIME NULL history.
+  # Writes are raw autocommit (AuditLog.record!) — AR's txn-wrapped save
+  # is silently lost on bitemporal collections (upstream BUG-024).
+  def section_bitemporal_audit
+    puts
+    puts "=== Bitemporal audit log ==="
+    load Rails.root.join("db/migrate/008_create_audit_logs.rb")
+    CreateAuditLogs.new.migrate(:up) unless @conn.collections.include?("audit_logs")
+
+    marker = "smoke_#{SecureRandom.hex(4)}"
+    AuditLog.record!(actor: marker, action: "created", target: "/a", context: "{}", recorded_at: Time.current.iso8601)
+    AuditLog.record!(actor: marker, action: "updated", target: "/a", context: "{}", recorded_at: Time.current.iso8601)
+
+    current = AuditLog.where(actor: marker).to_a
+    record("bitemporal.model_read", (current.size == 2 ? :ok : :fail), "rows=#{current.size}")
+
+    versions = AuditLog.versions.select { |v| v["actor"] == marker }
+    record("bitemporal.versions", (versions.size >= 2 && versions.all? { |v| v.key?("_ts_system") } ? :ok : :fail),
+           "versions=#{versions.size}")
+  end
+
+  # Sample app uses document_strict for locations: the spatial engine's
+  # geometry WRITE path works on current upstream (ST_MakePoint /
+  # ST_GeomFromText store GeoJSON), but read-side accessors (ST_X,
+  # ST_DWithin, ST_AsText) are still broken — so distance stays in Ruby.
+  # The geometry probe below tracks the upstream write-path fix.
   def section_spatial_engine
     puts
     puts "=== Spatial engine (document_strict + Ruby haversine) ==="
+    begin
+      coll = "smoke_geom_#{SecureRandom.hex(3)}"
+      @conn.execute("CREATE COLLECTION #{coll} (id INT PRIMARY KEY, geom GEOMETRY, label TEXT) ENGINE = spatial")
+      @conn.execute("INSERT INTO #{coll} (id, geom, label) VALUES (1, ST_MakePoint(101.6869, 3.1390), 'KL')")
+      row = @conn.select_all("SELECT geom FROM #{coll}").to_a.first
+      ok = row && row["geom"].to_s.include?("coordinates")
+      record("spatial.geometry_write", (ok ? :ok : :fail), row&.fetch("geom").to_s[0, 60])
+    rescue => e
+      record("spatial.geometry_write", :error, "#{e.class}: #{e.message[0, 120]}")
+    ensure
+      @conn.drop_collection(coll, if_exists: true) rescue nil
+    end
     begin
       @conn.execute("DELETE FROM locations WHERE id IN ('smk_nyc','smk_bos','smk_lax')") rescue nil
       @conn.execute(

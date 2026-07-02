@@ -1,10 +1,9 @@
-# NodeDB v0.3.0 BITEMPORAL collection demo.
+# NodeDB BITEMPORAL collection demo.
 #
-# EXPERIMENTAL — the BITEMPORAL modifier is accepted by the parser and the
-# collection is persisted, but reads against bitemporal collections still
-# emit the raw `{data,id}` blob shape over both pgwire and native (BUG-018
-# territory). The AuditLog model and view unwrap the blob themselves until
-# upstream lands virtual-column projection on bitemporal collections.
+# Reads project real columns on current upstream (plain SELECT,
+# count(*), AS OF SYSTEM TIME). Writes must be autocommit: INSERTs
+# committed inside explicit transactions are lost on bitemporal
+# collections (upstream BUG-024) — see AuditLog.record!.
 class CreateAuditLogs < ActiveRecord::Migration[8.0]
   def up
     create_collection :audit_logs, engine: :document_strict, bitemporal: true do |t|
