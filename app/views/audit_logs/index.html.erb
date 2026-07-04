@@ -7,24 +7,14 @@
       </h2>
       <div class="text-secondary">
         NodeDB <code>BITEMPORAL</code> collection: every committed
-        version of every row is retained. Current-state reads are plain
-        ActiveRecord; the version trail below comes from
-        <code>SELECT * FROM audit_logs AS OF SYSTEM TIME NULL</code>.
+        version of every row is retained. Reads <em>and</em> writes are
+        plain ActiveRecord (<code>create!</code> persists and versions
+        inside AR's transaction); the version trail below comes from
+        <code>AuditLog.versions</code> — the
+        <code>NodeDB::Bitemporal</code> concern's
+        <code>AS OF SYSTEM TIME NULL</code> scan.
       </div>
     </div>
-  </div>
-</div>
-
-<div class="alert alert-warning d-flex align-items-start mt-3">
-  <i class="ti ti-alert-triangle me-2 mt-1"></i>
-  <div>
-    <strong>Writes bypass ActiveRecord's save path.</strong>
-    NodeDB currently loses INSERTs committed inside explicit
-    transactions on bitemporal collections (tracked as BUG-024), and AR
-    wraps every <code>save</code> in one. <code>AuditLog.record!</code>
-    validates through the model, then issues a raw autocommit INSERT —
-    which persists correctly. Collapse to plain <code>create!</code>
-    when upstream fixes the transactional write path.
   </div>
 </div>
 
