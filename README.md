@@ -2,23 +2,41 @@
 
 > ## ⚠️ ALPHA DEMO — DO NOT USE IN PRODUCTION
 >
-> Depends on `nodedb-ruby` and `activerecord-nodedb-adapter` at
-> **`0.1.0.alpha.1`**, both **experimental and never tested in production**.
-> This app exists solely as an end-to-end smoke test for the adapter stack.
+> Depends on `activerecord-nodedb-adapter` (**`0.1.0.alpha.9`**) and
+> `nodedb-ruby` (**`0.1.0.alpha.6`**), both **experimental and never
+> tested in production**. This app exists solely as an end-to-end smoke
+> test for the adapter stack.
 >
-> Run on disposable data only.
+> Run on disposable data only — NodeDB's current upstream loses
+> document-collection contents across daemon restarts (see *Operating
+> notes* below).
 
 End-to-end demo proving [`activerecord-nodedb-adapter`](https://github.com/mkhairi/activerecord-nodedb-adapter) works against the
-Rails 8.x request → controller → view → ActiveRecord → NodeDB pgwire stack.
+Rails 8.x request → controller → view → ActiveRecord → NodeDB stack,
+over both the pgwire and native transports.
 
 ## Companion packages
 
 | Repo | Role |
 | ---- | ---- |
-| [`mkhairi/nodedb-ruby`](https://github.com/mkhairi/nodedb-ruby) | core — pgwire connection, type map, SQL builders |
+| [`mkhairi/nodedb-ruby`](https://github.com/mkhairi/nodedb-ruby) | core — pgwire + native connections, type map, SQL builders |
 | [`mkhairi/activerecord-nodedb-adapter`](https://github.com/mkhairi/activerecord-nodedb-adapter) | Rails ActiveRecord adapter (this app's primary dependency) |
-| [`mkhairi/sequel-nodedb-adapter`](https://github.com/mkhairi/sequel-nodedb-adapter) | Sequel adapter (stub) |
+| [`mkhairi/sequel-nodedb-adapter`](https://github.com/mkhairi/sequel-nodedb-adapter) | Sequel adapter — Dataset CRUD, DDL + engine helpers |
 | [`mkhairi/nodedb-on-rails`](https://github.com/mkhairi/nodedb-on-rails) | **this app** — Rails 8 sample exercising every NodeDB engine |
+
+## What the demo covers
+
+| Page | Engine / surface |
+| ---- | ---------------- |
+| `/articles`, `/posts` | document_strict CRUD + full-text search (`NodeDB::FullTextSearch`) |
+| `/locations` (+ map) | spatial writes via geometry constructors, haversine reads |
+| `/social_nodes` | graph — edges, traversal, PageRank (`NodeDB::Graph`) |
+| `/metrics` | timeseries + `time_bucket` aggregates (`NodeDB::Timeseries`) |
+| `/embeddings` | vector search (`NodeDB::Vector`) |
+| `/kv_sessions` | KV engine (`NodeDB::KV`) |
+| `/audit_logs` | bitemporal collection — plain AR writes + `NodeDB::Bitemporal` time-travel reads |
+| `/tenants` | multi-tenancy — tenant provisioning + per-connection isolation playground |
+| `/server_info` | connection, adapter, migrations, collections, ops `SHOW` commands |
 
 ## Stack
 
@@ -27,36 +45,26 @@ Rails 8.x request → controller → view → ActiveRecord → NodeDB pgwire sta
 | Ruby     | 4.0.1 (mise-managed) |
 | Rails    | 8.1.3 |
 | Puma     | 8.0.1 |
-| Adapter  | `activerecord-nodedb-adapter` (path gem) |
-| Core lib | `nodedb-ruby` (path gem) |
-| NodeDB   | local source build (`../nodedb`), pgwire on `127.0.0.1:6432` |
+| Adapter  | `activerecord-nodedb-adapter` 0.1.0.alpha.9 |
+| Core lib | `nodedb-ruby` 0.1.0.alpha.6 |
+| NodeDB   | local source build (`../nodedb`, upstream `main`), pgwire `127.0.0.1:6432`, native `:6433` |
 
 ## Layout
 
 ```
 nodedb-on-rails/
-├── Gemfile                            # rails ~> 8.1, propshaft, puma, path gems
-├── Rakefile
-├── config.ru
-├── bin/{rails,rake}                   # standard Rails 8 launchers
+├── Gemfile                        # rails ~> 8.1, propshaft, puma; Gemfile.local for path gems
 ├── config/
-│   ├── boot.rb / application.rb / environment.rb
-│   ├── routes.rb                      # resources :articles + :social_nodes
-│   ├── database.yml                   # adapter: nodedb, port 6432, user nodedb
-│   ├── environments/development.rb    # standard Rails defaults (migration_error: :page_load works)
-│   └── initializers/secret_key.rb
+│   ├── routes.rb                  # one resource per engine demo (see table above)
+│   └── database.yml               # adapter: nodedb; transport/port/db via NODEDB_* env
 ├── app/
-│   ├── controllers/
-│   │   ├── application_controller.rb
-│   │   └── articles_controller.rb     # 7 REST actions + search
-│   ├── models/
-│   │   ├── application_record.rb
-│   │   └── article.rb                 # default_scope select unqualified cols
-│   └── views/
-│       ├── layouts/application.html.erb
-│       └── articles/{index,show,new,edit,_form}.html.erb
-└── db/migrate/
-    └── 001_create_articles.rb         # CREATE COLLECTION ... document_strict
+│   ├── controllers/               # articles, posts, locations, social_nodes, metrics,
+│   │                              # embeddings, kv_sessions, audit_logs, tenants, server_info
+│   ├── models/                    # one model per engine + Tenant/TenantSession pair
+│   └── views/                     # Tabler-based pages, one folder per demo
+├── db/migrate/                    # 001-009 — engine-aware create_* helpers per collection
+├── scripts/feature_smoke.rb       # 33-check end-to-end engine smoke (both transports)
+└── lib/tasks/test_both_transports.rake
 ```
 
 ## Setup
@@ -99,22 +107,34 @@ defaults to **pgwire**:
 
 ```bash
 # Setup / migrations run over either transport (default pgwire).
-# Schema-tracking over native works since adapter 0.1.0.alpha.5
-# (the result shim normalises the document blob).
 bundle exec ruby bin/setup
 
 # Run the app over the native binary protocol (no libpq):
 NODEDB_TRANSPORT=native bundle exec rails server -p 3737 -b 127.0.0.1
 ```
 
-Native runtime status (NodeDB v0.3.0 release `25040fdf`, adapter
-`0.1.0.alpha.7`, retested 2026-06-07): connection, schema-tracking,
-document model CRUD, timeseries, graph (traversal + pagerank), spatial
-roundtrip, and FTS (search + fuzzy) all work. **KV and vector reads**
-remain limited by BUG-018 (those engines' columns aren't projected
-over native). `feature_smoke` parity: pgwire 21/21, native 17/19.
-`/server_info` shows the active transport. See
-activerecord-nodedb-adapter `docs/bugs/018`, issue #45.
+The native transport is at **full result-shape parity** with pgwire on
+current upstream (retested 2026-07-05): `feature_smoke` passes 33/33
+on both, and the minitest suite is green on both legs
+(`rake test:both_transports`). pgwire remains the documented primary
+transport — the hand-rolled native client will be replaced by
+NodeDB's official SDK once one ships. `/server_info` shows the active
+transport.
+
+### Operating notes (current upstream)
+
+- **Daemon restarts lose document-collection contents** (upstream
+  durability bug, tracked in the [adapter's bug tracker][ar-bugs] —
+  the critical entry in `docs/KNOWN_ISSUES.md`): after any restart,
+  wipe the data dir and re-run `bin/setup` + seeds.
+- Dev and test environments share the default `nodedb` database
+  (databases created via `CREATE DATABASE` are unusable upstream).
+- Rapid one-off connections can hit transient
+  `Password authentication failed` rejections with correct
+  credentials — retry after ~1s; pooled Rails connections are
+  unaffected.
+
+[ar-bugs]: https://github.com/mkhairi/activerecord-nodedb-adapter/issues?q=%22%5Bupstream%3ANodeDB%5D%22
 
 ### Monorepo development setup
 
@@ -187,34 +207,29 @@ The same shape works for all engines: `create_timeseries`,
 `create_document_strict`. Pass `engine_options:` for engine-specific
 WITH-clause settings (retention, compression, etc).
 
-### 2. Unqualified column projection
+### 2. Qualified references — handled by the adapter
 
-NodeDB's SQL parser does not resolve qualified column refs:
-
-| SQL                                          | Result    |
-| -------------------------------------------- | --------- |
-| `SELECT id, title, body FROM articles`       | works     |
-| `SELECT articles.id, articles.title FROM …`  | columns return nil |
-| `SELECT "articles"."id" FROM "articles"`     | columns return nil |
-
-ActiveRecord's default projection is `SELECT "articles".* FROM "articles"`,
-so the model declares an unqualified `default_scope`:
+NodeDB silently matches zero rows for table-qualified column
+references (`"articles"."title" = ...`), which is exactly what
+ActiveRecord generates for every hash-condition. The adapter strips
+the target-table qualifier from single-table statements before
+dispatch, so **models need no workaround** — plain AR works:
 
 ```ruby
 class Article < ApplicationRecord
   self.table_name  = "articles"
   self.primary_key = "id"
 
-  default_scope { select("id, title, body") }   # unqualified — adapter quirk
-  before_create  { self.id ||= SecureRandom.uuid }
-
   validates :title, presence: true
+
+  before_create { self.id ||= SecureRandom.uuid }
 end
 ```
 
-`Article.find(id)` works because AR generates a single-column `WHERE id = '…'`
-that NodeDB does resolve, and the `select` in the default scope feeds the
-projection.
+`where(title: ...)`, conditional counts, grouped calculations, and
+AR's default `SELECT "articles".*` projection all behave normally.
+(No `SERIAL`/sequences upstream — text UUID PKs via `before_create`
+is the house pattern.)
 
 ### 3. Schema migrations work via the adapter
 
@@ -225,23 +240,23 @@ migration in `db/migrate/` isn't recorded. NodeDB doesn't accept
 standard `CREATE TABLE`, so out of the box this hook 500s every page.
 
 The adapter ships **NodeDB-aware** `SchemaMigration` and
-`InternalMetadata` subclasses (PR #24) that use
-`CREATE COLLECTION ... WITH (engine='document_strict')` plus raw
-unqualified SQL. Effect:
+`InternalMetadata` subclasses that use
+`CREATE COLLECTION ... WITH (engine='document_strict')` plus
+NodeDB-safe read/write shapes. Effect:
 
 - `config/environments/development.rb` keeps the Rails default
   `migration_error: :page_load` — no override needed.
 - `bin/setup` (provided here) creates both tracking collections, runs
   every migration, and records the versions. Idempotent.
-- `rails db:rollback` etc work because the DELETE path piggybacks on
-  the BUG-008 workaround.
+- `rails db:migrate` / `db:rollback` work end-to-end, including the
+  schema dump.
 
 ```bash
 mise x -- bundle exec ruby bin/setup
 # ==> Creating schema_migrations + ar_internal_metadata
 # ==> Running 001_create_articles.rb
 # ...
-# Done. Applied versions: ["001", "002", "003", "004", "005", "006"]
+# Done. Applied versions: ["001", "002", ..., "009"]
 ```
 
 After running `bin/setup`, every page in dev serves normally and
@@ -250,7 +265,7 @@ COLLECTIONS` lists it). To inspect manually:
 
 ```ruby
 ActiveRecord::Base.connection_pool.schema_migration.versions
-# => ["001", "002", ..., "006"]
+# => ["001", "002", ..., "009"]
 
 ActiveRecord::Base.connection_pool.internal_metadata[:environment]
 # => "development"
@@ -270,23 +285,22 @@ default: &default
   } %>
 ```
 
-## Known follow-ups for the adapter
+## Known issues
 
-These belong in `activerecord-nodedb-adapter` rather than user code:
-
-- **SELECT-* unwrap**: schemaless collections return `{result: <json>}`
-  instead of flat columns; the adapter should detect and unwrap.
-- **Strip table qualifier from SELECT projections** (or rewrite SQL in
-  `exec_query`) so AR's default `"table"."col"` works without a model
-  workaround.
-- **Stub `schema_migrations` reads** so Rails' migration-error guard works
-  with `migration_error: :page_load`.
-- **Silence harmless `INSERT EDGE` pg-gem warnings** that print to stderr
-  during graph writes.
+NodeDB-side quirks the stack works around (and the ones it can't) are
+tracked centrally: per-bug reproductions live in the
+[adapter's issue tracker][ar-bugs] (titles prefixed
+`[upstream:NodeDB] BUG-NNN`), and the user-facing rollup is the
+adapter's [`docs/KNOWN_ISSUES.md`](https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md).
+The three that shape day-to-day use of this demo are summarised under
+*Operating notes* above.
 
 ## Test results
 
-Adapter RSpec suite: **13 examples, 0 failures, 0 pending** (after BUG-001 was
-fixed in NodeDB source — see `../bugs/001-insert-resources-exhausted-non-timeseries.md`).
+Verified against upstream `main` (2026-07-05), both transports:
 
-CRUD walkthrough: all 7 REST verbs pass against a live NodeDB build.
+- `scripts/feature_smoke.rb` — **33/33** over pgwire AND native
+  (every engine end-to-end, including the tenants isolation proof)
+- `rake test:both_transports` — **37 runs, 0 failures** on both legs
+- Adapter RSpec suite — **92 examples, 0 failures**
+- CRUD walkthrough — all 7 REST verbs pass against a live NodeDB build
