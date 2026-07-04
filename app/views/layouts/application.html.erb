@@ -46,6 +46,7 @@
                 ["vectors",   embeddings_path,    "ti-vector-triangle",  "Vector search"],
                 ["kv",        kv_sessions_path,   "ti-key",              "KV Store"],
                 ["audit",     audit_logs_path,    "ti-clock-hour-3",     "Audit (bitemporal)"],
+                ["tenants",   tenants_path,       "ti-building-community", "Tenants"],
                 ["info",      server_info_path,   "ti-server",           "Server info"]
               ].each do |slug, path, icon, label| %>
                 <% active = current_page?(path) || (slug == "social" && controller_name == "social_nodes") %>

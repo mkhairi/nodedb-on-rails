@@ -1,0 +1,127 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">
+        Tenant: <code><%= @tenant.id %></code>
+        <span class="badge bg-azure-lt ms-2">ISOLATED SESSION</span>
+      </h2>
+      <div class="text-secondary">
+        Everything below ran over a fresh <code>NodeDB::Connection</code>
+        authenticated as <code><%= @tenant.username %></code> — inside this
+        tenant's isolation boundary, not the app's superuser connection.
+      </div>
+    </div>
+    <div class="col-auto">
+      <%= link_to tenants_path, class: "btn" do %>
+        <i class="ti ti-arrow-left me-1"></i> All tenants
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3 g-3">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Isolation proof</h3>
+      </div>
+      <div class="card-body">
+        <p class="text-secondary small mb-2">
+          The default tenant's <code>articles</code> collection exists and is
+          readable on the app's normal connection — but from this tenant's
+          session the same query fails:
+        </p>
+        <div class="mb-2"><code>SELECT id FROM articles LIMIT 1</code></div>
+        <% if @isolation_error %>
+          <div class="alert alert-success mb-0">
+            <i class="ti ti-shield-check me-1"></i>
+            <code><%= @isolation_error %></code>
+          </div>
+        <% else %>
+          <div class="alert alert-danger mb-0">
+            <i class="ti ti-shield-x me-1"></i>
+            Query unexpectedly succeeded — isolation boundary not enforced!
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        <h3 class="card-title">This tenant's collections</h3>
+        <div class="text-secondary small ms-auto"><code>SHOW COLLECTIONS</code> as <code><%= @tenant.username %></code></div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter table-sm card-table">
+          <thead><tr><th>Name</th><th>Owner</th></tr></thead>
+          <tbody>
+            <% @collections.each do |c| %>
+              <tr>
+                <td><code><%= c["name"] %></code></td>
+                <td class="text-secondary small"><%= c["owner"] %></td>
+              </tr>
+            <% end %>
+            <% if @collections.empty? %>
+              <tr><td colspan="2" class="text-secondary text-center">No collections yet.</td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <% if @counters %>
+      <div class="card mt-3">
+        <div class="card-header">
+          <h3 class="card-title">Counters</h3>
+          <div class="text-secondary small ms-auto"><code>SHOW TENANT <%= @tenant.id %></code></div>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <% @counters.each do |k, v| %>
+              <dt class="col-6 text-secondary"><%= k %></dt>
+              <dd class="col-6"><code><%= v %></code></dd>
+            <% end %>
+          </dl>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Notes <span class="badge bg-blue-lt ms-2">tenant_notes</span></h3>
+        <div class="text-secondary small ms-auto"><%= @notes.size %> rows · written inside the tenant</div>
+      </div>
+      <div class="card-body border-bottom">
+        <%= form_with url: add_note_tenant_path(@tenant), method: :post, local: true do |f| %>
+          <div class="input-group">
+            <%= f.text_field :body, class: "form-control", placeholder: "note body…" %>
+            <%= f.submit "Add note", class: "btn btn-primary" %>
+          </div>
+          <div class="form-hint mt-1">
+            The <code>tenant_notes</code> collection is created on first use —
+            by the tenant user, homed to this tenant.
+          </div>
+        <% end %>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+          <thead><tr><th>Created</th><th>Body</th><th>Id</th></tr></thead>
+          <tbody>
+            <% @notes.each do |n| %>
+              <tr>
+                <td class="text-secondary small"><%= n["created_at"] %></td>
+                <td><%= n["body"] %></td>
+                <td class="text-secondary small"><code><%= n["id"] %></code></td>
+              </tr>
+            <% end %>
+            <% if @notes.empty? %>
+              <tr><td colspan="3" class="text-secondary text-center">No notes yet — add one above.</td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
