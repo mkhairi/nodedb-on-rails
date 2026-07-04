@@ -31,7 +31,7 @@ over both the pgwire and native transports.
 | `/articles`, `/posts` | document_strict CRUD + full-text search (`NodeDB::FullTextSearch`) |
 | `/locations` (+ map) | spatial writes via geometry constructors, haversine reads |
 | `/social_nodes` | graph — edges, traversal, PageRank (`NodeDB::Graph`) |
-| `/metrics` | timeseries + `time_bucket` aggregates (`NodeDB::Timeseries`) |
+| `/metrics` | timeseries + `time_bucket` aggregates (`NodeDB::Timeseries`) + realtime ApexCharts system gauges (CPU load, process RSS, disk) fed by live INSERT + range-read ticks |
 | `/embeddings` | vector search (`NodeDB::Vector`) |
 | `/kv_sessions` | KV engine (`NodeDB::KV`) |
 | `/audit_logs` | bitemporal collection — plain AR writes + `NodeDB::Bitemporal` time-travel reads |

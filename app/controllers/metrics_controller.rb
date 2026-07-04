@@ -8,6 +8,17 @@ class MetricsController < ApplicationController
     @buckets ||= []
   end
 
+  # Realtime feed for the ApexCharts panel: every poll writes a fresh
+  # sample of the sys.* gauges into the timeseries collection, then
+  # reads the last 10 minutes back — a genuine NodeDB timeseries
+  # write + range-read cycle per tick.
+  def live
+    SystemSampler.sample!
+    render json: { series: SystemSampler.series }
+  rescue => e
+    render json: { error: e.message }, status: :service_unavailable
+  end
+
   def create
     # Raw INSERT: AR's wrapped insert into a timeseries collection trips
     # NodeDB's MVCC ("could not serialize access due to concurrent

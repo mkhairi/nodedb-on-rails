@@ -51,7 +51,11 @@ Rails.application.routes.draw do
   end
 
   # Timeseries engine demo (Metric model -> metrics collection).
-  resources :metrics, only: %i[index create]
+  resources :metrics, only: %i[index create] do
+    collection do
+      get :live # realtime JSON feed: samples sys.* gauges + returns series
+    end
+  end
 
   # Vector engine demo (Embedding model -> embeddings collection + vector index).
   resources :embeddings, only: %i[index create] do
