@@ -1,7 +1,6 @@
-# NodeDB BITEMPORAL collection demo. Reads are plain ActiveRecord on
-# current upstream; writes go through AuditLog.record! (raw autocommit
-# INSERT) because AR's transaction-wrapped save is silently lost on
-# bitemporal collections (upstream BUG-024).
+# NodeDB BITEMPORAL collection demo. Reads and writes are plain
+# ActiveRecord on current upstream; time-travel reads come from the
+# NodeDB::Bitemporal concern (versions / history / as_of).
 class AuditLogsController < ApplicationController
   def index
     @logs     = AuditLog.all.sort_by { |l| l.recorded_at.to_s }.reverse

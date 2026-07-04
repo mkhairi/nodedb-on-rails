@@ -1,9 +1,7 @@
 require "test_helper"
 
-# Bitemporal demo collection. Reads are plain ActiveRecord on current
-# upstream; writes go through AuditLog.record! (raw autocommit INSERT)
-# because AR's transaction-wrapped save is silently lost on bitemporal
-# collections (BUG-024, issue #72).
+# Bitemporal demo collection. Reads and writes are plain ActiveRecord
+# on current upstream; time-travel reads via NodeDB::Bitemporal.
 class AuditLogsControllerTest < ActionDispatch::IntegrationTest
   setup { skip_if_daemon_down! }
 

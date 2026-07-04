@@ -216,9 +216,8 @@ class FeatureSmoke
     @conn.drop_collection(coll, if_exists: true) rescue nil
   end
 
-  # BITEMPORAL collection: model reads + AS OF SYSTEM TIME NULL history.
-  # Writes are raw autocommit (AuditLog.record!) — AR's txn-wrapped save
-  # is silently lost on bitemporal collections (upstream BUG-024).
+  # BITEMPORAL collection: plain AR writes (txn-safe on current
+  # upstream) + AS OF SYSTEM TIME NULL history via NodeDB::Bitemporal.
   def section_bitemporal_audit
     puts
     puts "=== Bitemporal audit log ==="
