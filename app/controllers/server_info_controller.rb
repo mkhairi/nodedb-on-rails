@@ -40,7 +40,13 @@ class ServerInfoController < ApplicationController
     @collections = conn.execute("SHOW COLLECTIONS").to_a.map do |row|
       name = row["name"]
       next if INTERNAL_COLLECTIONS.include?(name)
-      describe = conn.execute("DESCRIBE #{name}").to_a
+      # SHOW COLLECTIONS lists tenant-homed collections too, but the
+      # superuser session can't DESCRIBE them — skip those rows.
+      describe = begin
+        conn.execute("DESCRIBE #{name}").to_a
+      rescue ActiveRecord::StatementInvalid
+        next
+      end
       engine   = describe.find { |r| r["field"] == "__storage" }&.fetch("type") || "schemaless"
       cols     = describe.reject { |r| r["field"].to_s.start_with?("__") }
       count    = safe_count(conn, name)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 8) do
+ActiveRecord::Schema[8.1].define(version: 9) do
   create_document_strict "articles" do |t|
     t.column :id, "TEXT PRIMARY KEY"
     t.column :title, "text"
@@ -56,6 +56,13 @@ ActiveRecord::Schema[8.1].define(version: 8) do
 
   create_collection "social_nodes" do |t|
     t.column :document, "JSON"
+  end
+
+  create_document_strict "tenant_registry" do |t|
+    t.column :id, "TEXT PRIMARY KEY"
+    t.column :username, "text"
+    t.column :password, "text"
+    t.column :created_at, "text"
   end
 
 end

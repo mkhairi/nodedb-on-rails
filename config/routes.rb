@@ -35,6 +35,15 @@ Rails.application.routes.draw do
   # time-travel reads (versions / history / as_of).
   resources :audit_logs, only: %i[index create]
 
+  # Multi-tenancy demo: CREATE TENANT + tenant-bound users; per-request
+  # tenant sessions prove the isolation boundary. Provision-only —
+  # dropping users bricks the daemon's boot integrity check (BUG-035).
+  resources :tenants, only: %i[index show create] do
+    member do
+      post :add_note
+    end
+  end
+
   resources :kv_sessions, only: %i[index create destroy], param: :key do
     collection do
       get :inspect_key

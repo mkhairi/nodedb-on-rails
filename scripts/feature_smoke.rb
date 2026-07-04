@@ -38,6 +38,7 @@ class FeatureSmoke
       section_idiomatic_where
       section_natural_key_pk
       section_bitemporal_audit
+      section_tenants
     ]
   end
 
@@ -234,6 +235,36 @@ class FeatureSmoke
     versions = AuditLog.versions.select { |v| v["actor"] == marker }
     record("bitemporal.versions", (versions.size >= 2 && versions.all? { |v| v.key?("_ts_system") } ? :ok : :fail),
            "versions=#{versions.size}")
+  end
+
+  # Multi-tenancy: CREATE TENANT + tenant-bound user; the tenant
+  # session (fresh pgwire connection as that user) must be isolated
+  # from the default tenant's collections. A fixed tenant is reused
+  # across runs — provision-only, no retire (dropping users bricks the
+  # daemon's boot integrity check, BUG-035).
+  def section_tenants
+    puts
+    puts "=== Tenants ==="
+    load Rails.root.join("db/migrate/009_create_tenant_registry.rb")
+    CreateTenantRegistry.new.migrate(:up) unless @conn.collections.include?("tenant_registry")
+
+    name = "smoke_tenant"
+    tenant = Tenant.find_or_provision!(name)
+    record("tenants.provision", (tenant.persisted? ? :ok : :fail), "user=#{tenant.username}")
+
+    session = tenant.session
+    marker = "smoke note #{SecureRandom.hex(3)}"
+    session.add_note!(marker)
+    notes = session.notes
+    record("tenants.scoped_write", (notes.any? { |n| n["body"] == marker } ? :ok : :fail),
+           "notes=#{notes.size}")
+
+    record("tenants.isolation", (session.isolation_error ? :ok : :fail),
+           session.isolation_error.to_s[0, 80])
+
+    counters = tenant.counters
+    record("tenants.counters", (counters && counters["name"] == name ? :ok : :fail),
+           "requests=#{counters&.fetch('total_requests', nil)}")
   end
 
   # Sample app uses document_strict for locations: the spatial engine's
