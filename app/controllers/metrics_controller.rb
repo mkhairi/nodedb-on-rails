@@ -26,10 +26,9 @@ class MetricsController < ApplicationController
 
   private
 
-  # AVG()/GROUP over a time_bucket. Aggregates require the pgwire
-  # transport — over native, NodeDB returns the empty-result form
-  # (activerecord-nodedb-adapter docs/bugs/018, #45), so this degrades to
-  # an empty table rather than raising.
+  # AVG()/GROUP over a time_bucket — works on both transports since
+  # NodeDB's response-shaping rework. Fails soft to an empty table on
+  # a stricter build rather than raising.
   def bucketed_averages
     sql = "SELECT #{Metric.time_bucket('1 minute', as: :bucket)}, " \
           "host, AVG(value) AS avg_value " \

@@ -31,9 +31,8 @@ Rails.application.routes.draw do
     end
   end
 
-  # Bitemporal demo (NodeDB v0.3.0). EXPERIMENTAL — see BUG-018: SELECT
-  # over a bitemporal collection returns the raw `{data,id}` blob shape,
-  # so the view does a JSON-unwrap before rendering.
+  # Bitemporal demo: plain AR reads/writes + NodeDB::Bitemporal
+  # time-travel reads (versions / history / as_of).
   resources :audit_logs, only: %i[index create]
 
   resources :kv_sessions, only: %i[index create destroy], param: :key do

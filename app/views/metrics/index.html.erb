@@ -43,9 +43,7 @@
           <tbody>
             <% if @buckets.empty? %>
               <tr><td colspan="3" class="text-secondary">
-                No aggregate rows. <code>AVG()</code>/<code>GROUP BY</code> needs the
-                <strong>pgwire</strong> transport (native gap — see
-                activerecord-nodedb-adapter docs/bugs/018, #45).
+                No aggregate rows yet — insert some metrics above.
               </td></tr>
             <% else %>
               <% @buckets.each do |b| %>

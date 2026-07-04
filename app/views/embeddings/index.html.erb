@@ -12,11 +12,10 @@
 <% end %>
 
 <div class="alert alert-info mt-3 mb-0 small">
-  NodeDB <code>SEARCH … USING VECTOR()</code> returns internal surrogate
-  ids + distances (it does not project document fields), so the catalog
-  below is the fixed seed set. Vector search needs the <strong>pgwire</strong>
-  transport — over native it is gap #45 (activerecord-nodedb-adapter
-  docs/bugs/018).
+  NodeDB <code>SEARCH … USING VECTOR()</code> projects
+  <code>id</code> / <code>_surrogate</code> / <code>distance</code>
+  result columns (no document fields), so the catalog below is the
+  fixed seed set. Works identically over pgwire and native.
 </div>
 
 <div class="row mt-3 g-3">

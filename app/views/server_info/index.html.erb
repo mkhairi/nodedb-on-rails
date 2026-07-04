@@ -53,15 +53,18 @@
           <dt class="col-5 text-secondary">Adapter</dt>
           <dd class="col-7"><code><%= @server[:adapter_name] %></code></dd>
 
-          <dt class="col-5 text-secondary">database_version stub</dt>
-          <dd class="col-7"><code><%= @server[:database_version] %></code></dd>
+          <dt class="col-5 text-secondary">database_version</dt>
+          <dd class="col-7">
+            <code><%= @server[:database_version] %></code>
+            <span class="text-secondary small">via server_version_num</span>
+          </dd>
 
           <dt class="col-5 text-secondary">Prepared statements</dt>
           <dd class="col-7">
             <% if @server[:prepared] %>
               <span class="badge bg-blue-lt">enabled</span>
             <% else %>
-              <span class="badge bg-orange-lt">disabled (BUG-005)</span>
+              <span class="badge bg-orange-lt">disabled — simple-query mode</span>
             <% end %>
           </dd>
 
@@ -196,8 +199,8 @@
   Surfaced by <code>connection.show_stats</code>,
   <code>show_metrics</code>, <code>show_memory</code>,
   <code>show_roles</code>, and <code>show_tenant(0)</code> —
-  adapter helpers shipped in
-  <code>activerecord-nodedb-adapter 0.1.0.alpha.8</code>.
+  <code>activerecord-nodedb-adapter</code> ops helpers (real row sets
+  on both transports).
 </div>
 
 <div class="row g-3 mt-1">
@@ -349,6 +352,6 @@
 
 <div class="text-secondary small mt-3 mb-4">
   Tracked NodeDB upstream limitations:
-  <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/tree/main/docs/bugs">docs/bugs</a> ·
-  <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues">issues</a>
+  <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues?q=%22%5Bupstream%3ANodeDB%5D%22">bug tracker</a> ·
+  <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md">known issues</a>
 </div>
