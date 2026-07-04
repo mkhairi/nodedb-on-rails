@@ -11,6 +11,74 @@
   <div class="alert alert-warning mt-3"><%= @error %></div>
 <% end %>
 
+<div class="card mt-3">
+  <div class="card-header">
+    <h3 class="card-title">
+      Live system gauges
+      <span class="badge bg-green-lt ms-2">REALTIME</span>
+    </h3>
+    <div class="text-secondary small ms-auto" id="live-status">
+      polls <code>/metrics/live</code> every 3s — each tick INSERTs
+      <code>sys.*</code> gauge rows and range-reads the last 10 minutes
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-lg-4"><div id="chart-cpu"></div></div>
+      <div class="col-lg-4"><div id="chart-mem"></div></div>
+      <div class="col-lg-4"><div id="chart-disk"></div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@5.16.0/dist/apexcharts.min.js"
+        integrity="sha384-ev+0gnMiCR/xVXDO/DIRntnh/SqpByfMpm3uB8SFR/IkPnsSdZHnyi/NDdUZUXOv"
+        crossorigin="anonymous"></script>
+<script>
+  (function () {
+    const mk = (el, name, color, suffix) => new ApexCharts(
+      document.querySelector(el), {
+        chart: { type: "area", height: 220, animations: { enabled: true, dynamicAnimation: { speed: 800 } },
+                 toolbar: { show: false }, zoom: { enabled: false } },
+        series: [{ name: name, data: [] }],
+        stroke: { curve: "smooth", width: 2 },
+        fill: { type: "gradient", gradient: { opacityFrom: 0.35, opacityTo: 0.05 } },
+        colors: [color],
+        dataLabels: { enabled: false },
+        title: { text: name, style: { fontSize: "13px" } },
+        xaxis: { type: "datetime", labels: { datetimeUTC: false } },
+        yaxis: { labels: { formatter: v => v == null ? "" : v.toFixed(1) + suffix }, min: 0 },
+        tooltip: { x: { format: "HH:mm:ss" } }
+      });
+
+    const panels = {
+      "sys.cpu_load": { label: "CPU load (1m)",    chart: mk("#chart-cpu",  "CPU load (1m)",    "#206bc4", "") },
+      "sys.mem_mb":   { label: "Process RSS (MB)", chart: mk("#chart-mem",  "Process RSS (MB)", "#2fb344", " MB") },
+      "sys.disk_pct": { label: "Disk / used (%)",  chart: mk("#chart-disk", "Disk / used (%)",  "#f76707", "%") }
+    };
+    Object.values(panels).forEach(p => p.chart.render());
+
+    const status = document.getElementById("live-status");
+    async function tick() {
+      try {
+        const res  = await fetch("<%= live_metrics_path %>", { headers: { Accept: "application/json" } });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.error || res.status);
+        body.series.forEach(s => {
+          const p = panels[s.name];
+          if (p) p.chart.updateSeries([{ name: p.label, data: s.data }]);
+        });
+        status.textContent = "live · " + new Date().toLocaleTimeString() +
+          " · " + body.series.reduce((n, s) => n + s.data.length, 0) + " points in window";
+      } catch (e) {
+        status.textContent = "feed error: " + e.message + " (retrying)";
+      }
+    }
+    tick();
+    setInterval(tick, 3000);
+  })();
+</script>
+
 <div class="row mt-3 g-3">
   <div class="col-lg-5">
     <div class="card">

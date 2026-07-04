@@ -6,6 +6,11 @@ gem "pg",    "~> 1.5"
 gem "propshaft"
 gem "puma", ">= 6.0"
 
+# System gauges for the realtime timeseries demo (/metrics).
+gem "sys-filesystem"
+gem "sys-cpu"
+gem "get_process_mem"
+
 # NodeDB gems. Both are alpha. A local Gemfile.local (gitignored) can
 # override these with `path:` sources for monorepo development.
 local_override = File.expand_path("Gemfile.local", __dir__)

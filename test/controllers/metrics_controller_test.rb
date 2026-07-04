@@ -18,16 +18,26 @@ class MetricsControllerTest < ActionDispatch::IntegrationTest
     m = Metric.limit(1).to_a.first
     skip "no metrics seeded yet" if m.nil?
 
-    # Pgwire reports the attribute under the renamed key; native
-    # currently strips most columns from document-backed reads
-    # (BUG-018) so the assertion is transport-aware.
-    if native?
-      # Native may return nil for the renamed key — only assert the
-      # reader doesn't raise.
-      assert_nothing_raised { m.ts }
-    else
-      assert_kind_of String, m.ts
-      assert_match(/\A\d+\z/, m.ts)
+    # Epoch ms; pgwire projects it as a TEXT string, native as Integer.
+    assert_match(/\A\d+\z/, m.ts.to_s)
+    assert_operator m.ts.to_i, :>, 0
+  end
+
+  test "GET /metrics/live samples the sys gauges and returns chart series" do
+    get live_metrics_path
+    assert_response :success
+
+    body = JSON.parse(response.body)
+    names = body["series"].map { |s| s["name"] }
+    assert_equal %w[sys.cpu_load sys.disk_pct sys.mem_mb], names.sort
+
+    # Each tick writes one point per gauge; the fresh sample must be
+    # in the returned window as [epoch_ms, value] pairs.
+    body["series"].each do |s|
+      assert s["data"].any?, "expected points for #{s['name']}"
+      ms, value = s["data"].last
+      assert_kind_of Integer, ms
+      assert_kind_of Numeric, value
     end
   end
 end
