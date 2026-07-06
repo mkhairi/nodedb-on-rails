@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
-  root "articles#index"
+  # Intro + in-app docs (static; render without a live daemon).
+  root "pages#home"
+  get "/docs", to: "pages#docs", as: :docs
 
   get "/server_info", to: "server_info#index", as: :server_info
 

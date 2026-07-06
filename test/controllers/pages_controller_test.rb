@@ -1,0 +1,23 @@
+require "test_helper"
+
+# Intro + docs are static: they must render with or without a live
+# daemon (no skip_if_daemon_down!).
+class PagesControllerTest < ActionDispatch::IntegrationTest
+  test "GET / renders the intro with engine cards" do
+    get root_path
+    assert_response :success
+    assert_match(/NodeDB on Rails/, response.body)
+    # one card per engine demo
+    %w[Articles Timeseries Tenants].each { |label| assert_match(label, response.body) }
+    assert_match(/disposable data only/i, response.body)
+  end
+
+  test "GET /docs renders every section anchor" do
+    get docs_path
+    assert_response :success
+    %w[setup transports documents fts spatial graph timeseries vector kv
+       bitemporal tenants adapter operating-notes].each do |anchor|
+      assert_match(/id="#{anchor}"/, response.body)
+    end
+  end
+end

@@ -1,0 +1,93 @@
+<div class="page-header d-print-none">
+  <div class="row align-items-center">
+    <div class="col">
+      <h2 class="page-title">NodeDB on Rails</h2>
+      <div class="text-secondary">
+        End-to-end demo of the
+        <a href="https://github.com/mkhairi/activerecord-nodedb-adapter">activerecord-nodedb-adapter</a>
+        stack — Rails 8 → ActiveRecord → NodeDB, over pgwire or the
+        native binary protocol.
+      </div>
+    </div>
+    <div class="col-auto">
+      <% if @daemon_up %>
+        <span class="badge bg-green-lt"><i class="ti ti-circle-check me-1"></i>daemon connected</span>
+      <% else %>
+        <span class="badge bg-red-lt"><i class="ti ti-plug-off me-1"></i>daemon unreachable</span>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="alert alert-warning d-flex align-items-start mt-3">
+  <i class="ti ti-alert-triangle me-2 mt-1"></i>
+  <div>
+    <strong>Alpha demo — disposable data only.</strong>
+    Every layer here is experimental: the gems have never run in
+    production, and NodeDB's current upstream loses document-collection
+    contents across daemon restarts. Wipe + reseed after restarts; see
+    <%= link_to "Docs → Operating notes", docs_path(anchor: "operating-notes") %>.
+  </div>
+</div>
+
+<div class="row mt-3 g-3">
+  <% [
+    ["Articles",          articles_path,     "ti-files",           "document_strict CRUD — plain ActiveRecord over a strict document collection"],
+    ["Posts (FTS)",       posts_path,        "ti-search",          "full-text search with CREATE FULLTEXT INDEX, ranked + fuzzy queries"],
+    ["Locations & Map",   locations_path,    "ti-map-pin",         "spatial writes via geometry constructors, haversine radius reads"],
+    ["Social Graph",      social_nodes_path, "ti-affiliate",       "graph edges, traversal, PageRank over the edge store"],
+    ["Timeseries",        metrics_path,      "ti-chart-line",      "TIME_KEY collections, time_bucket aggregates, realtime system-gauge charts"],
+    ["Vector search",     embeddings_path,   "ti-vector-triangle", "SEARCH ... USING VECTOR nearest-neighbour with projected distance"],
+    ["KV Store",          kv_sessions_path,  "ti-key",             "key-value engine with TTLs — set / get / exists / delete"],
+    ["Audit (bitemporal)", audit_logs_path,  "ti-clock-hour-3",    "every committed version retained; AS OF SYSTEM TIME time travel"],
+    ["Tenants",           tenants_path,      "ti-building-community", "server-side isolation: tenant-bound users, per-connection scoping"],
+    ["Server info",       server_info_path,  "ti-server",          "connection, migrations, collections, operational SHOW commands"]
+  ].each do |label, path, icon, blurb| %>
+    <div class="col-md-6 col-lg-4">
+      <%= link_to path, class: "card card-link h-100" do %>
+        <div class="card-body">
+          <h3 class="card-title mb-1"><i class="ti <%= icon %> me-2 text-primary"></i><%= label %></h3>
+          <div class="text-secondary small"><%= blurb %></div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="row mt-3 g-3">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Stack</h3></div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-6 text-secondary">rails</dt>
+          <dd class="col-6"><code><%= @gem_versions["rails"] || Rails.version %></code></dd>
+          <dt class="col-6 text-secondary">activerecord-nodedb-adapter</dt>
+          <dd class="col-6"><code><%= @gem_versions["activerecord-nodedb-adapter"] || "(not loaded)" %></code></dd>
+          <dt class="col-6 text-secondary">nodedb-ruby</dt>
+          <dd class="col-6"><code><%= @gem_versions["nodedb-ruby"] || "(not loaded)" %></code></dd>
+          <dt class="col-6 text-secondary">pg (libpq)</dt>
+          <dd class="col-6"><code><%= @gem_versions["pg"] || "(not loaded)" %></code></dd>
+          <dt class="col-6 text-secondary">transports</dt>
+          <dd class="col-6"><code>pgwire :6432</code> · <code>native :6433</code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Start here</h3></div>
+      <div class="card-body">
+        <ol class="mb-2">
+          <li><%= link_to "Docs", docs_path %> — how each engine demo works, with the migration + model code behind it.</li>
+          <li><%= link_to "Server info", server_info_path %> — live connection, collections, and ops counters.</li>
+          <li>Pick an engine card above and poke it — every page writes and reads a real NodeDB collection.</li>
+        </ol>
+        <div class="text-secondary small">
+          Full test pass: <code>rake test:both_transports</code> +
+          <code>scripts/feature_smoke.rb</code> over pgwire AND native.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
