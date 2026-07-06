@@ -10,6 +10,13 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     # one card per engine demo
     %w[Articles Timeseries Tenants].each { |label| assert_match(label, response.body) }
     assert_match(/disposable data only/i, response.body)
+
+    # Layout: Docs pinned in the sidebar footer, runtime versions in
+    # the page footer.
+    assert_match(/navbar-nav mt-auto/, response.body)
+    assert_match(%r{href="#{docs_path}"}, response.body)
+    assert_match(/Rails #{Regexp.escape(Rails.version)}/, response.body)
+    assert_match(/Ruby #{Regexp.escape(RUBY_VERSION)}/, response.body)
   end
 
   test "GET /docs renders every section anchor" do
