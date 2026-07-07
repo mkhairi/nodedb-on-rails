@@ -52,6 +52,9 @@ Rails.application.routes.draw do
     end
   end
 
+  # File-upload demo (kv payloads + document_strict metadata).
+  resources :stored_files, only: %i[index create show destroy]
+
   # Timeseries engine demo (Metric model -> metrics collection).
   resources :metrics, only: %i[index create] do
     collection do
