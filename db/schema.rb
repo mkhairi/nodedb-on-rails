@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 9) do
+ActiveRecord::Schema[8.1].define(version: 10) do
   create_document_strict "articles" do |t|
     t.column :id, "TEXT PRIMARY KEY"
     t.column :title, "text"
@@ -28,6 +28,11 @@ ActiveRecord::Schema[8.1].define(version: 9) do
 
   create_collection "embeddings" do |t|
     t.column :document, "JSON"
+  end
+
+  create_kv "file_blobs" do |t|
+    t.column :key, "TEXT PRIMARY KEY"
+    t.column :value, "text"
   end
 
   create_kv "kv_sessions" do |t|
@@ -56,6 +61,14 @@ ActiveRecord::Schema[8.1].define(version: 9) do
 
   create_collection "social_nodes" do |t|
     t.column :document, "JSON"
+  end
+
+  create_document_strict "stored_files" do |t|
+    t.column :id, "TEXT PRIMARY KEY"
+    t.column :filename, "text"
+    t.column :content_type, "text"
+    t.column :byte_size, "integer"
+    t.column :uploaded_at, "text"
   end
 
   create_document_strict "tenant_registry" do |t|
