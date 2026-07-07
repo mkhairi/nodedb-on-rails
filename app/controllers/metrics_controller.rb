@@ -44,7 +44,12 @@ class MetricsController < ApplicationController
     sql = "SELECT #{Metric.time_bucket('1 minute', as: :bucket)}, " \
           "host, AVG(value) AS avg_value " \
           "FROM metrics GROUP BY bucket, host"
-    ActiveRecord::Base.connection.execute(sql).to_a
+    # NodeDB drops the AS alias on aggregate columns (returns "avg(value)");
+    # normalize so the view can rely on "avg_value".
+    ActiveRecord::Base.connection.execute(sql).to_a.map do |row|
+      row["avg_value"] ||= row["avg(value)"]
+      row
+    end
   rescue StandardError
     []
   end
