@@ -84,7 +84,7 @@
 
 <div class="row mt-3 g-3">
   <div class="col-lg-6">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header"><h3 class="card-title"><i class="ti ti-plug-connected me-1"></i> NodeDB server</h3></div>
       <div class="card-body">
         <div class="datagrid">
@@ -128,7 +128,7 @@
   </div>
 
   <div class="col-lg-6">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header"><h3 class="card-title"><i class="ti ti-settings me-1"></i> Adapter + runtime</h3></div>
       <div class="card-body">
         <div class="datagrid">
@@ -268,7 +268,7 @@
 
 <div class="row g-3 mt-1">
   <div class="col-lg-7">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header">
         <h3 class="card-title">SHOW TENANTS</h3>
         <div class="text-secondary small ms-auto"><%= @ops_tenants.size %> tenants · request counters live</div>
@@ -313,7 +313,7 @@
   </div>
 
   <div class="col-lg-5">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header">
         <h3 class="card-title">SHOW USERS</h3>
         <div class="text-secondary small ms-auto"><%= @ops_users.size %> users</div>
@@ -350,7 +350,7 @@
   </div>
 
   <div class="col-lg-7">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header">
         <h3 class="card-title">SHOW ROLES</h3>
         <div class="text-secondary small ms-auto"><%= @ops_roles.size %> rows · defined roles</div>
@@ -392,7 +392,7 @@
 
   <% if @ops_tenant %>
     <div class="col-lg-5">
-      <div class="card">
+      <div class="card h-100">
         <div class="card-header">
           <h3 class="card-title">SHOW TENANT 0 <span class="badge bg-azure-lt ms-2">default tenant</span></h3>
           <div class="text-secondary small ms-auto">conn.show_tenant(0)</div>
@@ -425,7 +425,7 @@
 
 <div class="row g-3 mt-1">
   <div class="col-lg-6">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header"><h3 class="card-title">SHOW STATS</h3>
         <div class="text-secondary small ms-auto"><%= @ops_stats.size %> rows</div>
       </div>
@@ -449,7 +449,7 @@
   </div>
 
   <div class="col-lg-6">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header"><h3 class="card-title">SHOW METRICS</h3>
         <div class="text-secondary small ms-auto"><%= @ops_metrics.size %> rows</div>
       </div>
@@ -473,7 +473,7 @@
   </div>
 
   <div class="col-lg-7">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header"><h3 class="card-title">SHOW MEMORY</h3>
         <div class="text-secondary small ms-auto">Per-engine memory budget snapshot</div>
       </div>
@@ -519,7 +519,7 @@
   </div>
 
   <div class="col-lg-5">
-    <div class="card">
+    <div class="card h-100">
       <div class="card-header"><h3 class="card-title">SHOW GRAPH STATS</h3>
         <div class="text-secondary small ms-auto">O(1) persistent counters</div>
       </div>
@@ -554,10 +554,4 @@
       </div>
     </div>
   </div>
-</div>
-
-<div class="text-secondary small mt-3 mb-4">
-  Tracked NodeDB upstream limitations:
-  <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues?q=%22%5Bupstream%3ANodeDB%5D%22">bug tracker</a> ·
-  <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md">known issues</a>
 </div>
