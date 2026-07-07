@@ -9,12 +9,19 @@ class ServerInfoControllerTest < ActionDispatch::IntegrationTest
     assert_match(/NodeDB server/, response.body)
   end
 
-  test "GET /server_info renders all five ops SHOW cards" do
+  test "GET /server_info renders all ops SHOW cards" do
     get server_info_path
     assert_response :success
-    %w[STATS METRICS MEMORY ROLES TENANT].each do |cmd|
+    ["STATS", "METRICS", "MEMORY", "ROLES", "TENANT 0", "TENANTS", "USERS", "GRAPH STATS"].each do |cmd|
       assert_match(/SHOW #{cmd}/, response.body, "expected SHOW #{cmd} card")
     end
+  end
+
+  test "GET /server_info lists the default tenant and superuser" do
+    get server_info_path
+    assert_response :success
+    assert_match(/superuser/, response.body)
+    assert_match(/default/, response.body)
   end
 
   test "GET /server_info renders no BUG-022 banner on either transport" do

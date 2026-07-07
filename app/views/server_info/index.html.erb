@@ -1,8 +1,9 @@
 <div class="page-header d-print-none">
   <div class="row align-items-center">
     <div class="col">
+      <div class="page-pretitle">Operations</div>
       <h2 class="page-title">Server info</h2>
-      <div class="text-secondary">NodeDB connection, adapter, migrations, and collection state.</div>
+      <div class="text-secondary">NodeDB connection, adapter, migrations, collections, tenants, and operational counters.</div>
     </div>
     <div class="col-auto">
       <a class="btn" href="<%= server_info_path %>"><i class="ti ti-refresh me-1"></i> Refresh</a>
@@ -10,73 +11,72 @@
   </div>
 </div>
 
-<div class="row mt-3 g-3">
-  <div class="col-lg-6">
-    <div class="card">
-      <div class="card-header"><h3 class="card-title">NodeDB server</h3></div>
+<%# Summary stat cards %>
+<div class="row row-deck row-cards mt-1 g-3">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card card-sm">
       <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-5 text-secondary">Version</dt>
-          <dd class="col-7"><code><%= @server[:version] %></code></dd>
-
-          <dt class="col-5 text-secondary">Transport</dt>
-          <dd class="col-7">
-            <% if @server[:transport] == "native" %>
-              <span class="badge bg-green-lt">native</span>
-            <% else %>
-              <span class="badge bg-blue-lt">pgwire</span>
-            <% end %>
-            <span class="text-secondary small ms-1"><%= @server[:transport_detail] %></span>
-          </dd>
-
-          <dt class="col-5 text-secondary">Host : Port</dt>
-          <dd class="col-7"><code><%= @server[:host] %>:<%= @server[:port] %></code></dd>
-
-          <dt class="col-5 text-secondary">Database</dt>
-          <dd class="col-7"><code><%= @server[:database] %></code></dd>
-
-          <dt class="col-5 text-secondary">User</dt>
-          <dd class="col-7"><code><%= @server[:user] %></code></dd>
-
-          <dt class="col-5 text-secondary">application_name</dt>
-          <dd class="col-7"><code><%= @server[:application_name].presence || "(unset)" %></code></dd>
-        </dl>
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-primary text-white avatar"><i class="ti ti-database"></i></span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium">NodeDB <%= @server[:version] %></div>
+            <div class="text-secondary">
+              <% if @server[:transport] == "native" %>
+                <span class="badge bg-green-lt">native</span>
+              <% else %>
+                <span class="badge bg-blue-lt">pgwire</span>
+              <% end %>
+              <code class="small"><%= @server[:host] %>:<%= @server[:port] %></code>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
-  <div class="col-lg-6">
-    <div class="card">
-      <div class="card-header"><h3 class="card-title">Adapter + runtime</h3></div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card card-sm">
       <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-5 text-secondary">Adapter</dt>
-          <dd class="col-7"><code><%= @server[:adapter_name] %></code></dd>
-
-          <dt class="col-5 text-secondary">database_version</dt>
-          <dd class="col-7">
-            <code><%= @server[:database_version] %></code>
-            <span class="text-secondary small">via server_version_num</span>
-          </dd>
-
-          <dt class="col-5 text-secondary">Prepared statements</dt>
-          <dd class="col-7">
-            <% if @server[:prepared] %>
-              <span class="badge bg-blue-lt">enabled</span>
-            <% else %>
-              <span class="badge bg-orange-lt">disabled — simple-query mode</span>
-            <% end %>
-          </dd>
-
-          <dt class="col-5 text-secondary">ActiveRecord</dt>
-          <dd class="col-7"><code><%= @server[:ar_version] %></code></dd>
-
-          <dt class="col-5 text-secondary">Rails</dt>
-          <dd class="col-7"><code><%= @server[:rails_version] %></code></dd>
-
-          <dt class="col-5 text-secondary">Ruby</dt>
-          <dd class="col-7"><code><%= @server[:ruby_version] %></code></dd>
-        </dl>
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-azure text-white avatar"><i class="ti ti-stack-2"></i></span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium"><%= @collections.size %> collections</div>
+            <div class="text-secondary"><%= @collections.sum { |c| c.row_count.to_i } %> rows across engines</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-purple text-white avatar"><i class="ti ti-building-skyscraper"></i></span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium"><%= @ops_tenants.size %> tenants</div>
+            <div class="text-secondary"><%= @ops_users.size %> users · <%= @ops_roles.size %> roles</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card card-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <span class="bg-orange text-white avatar"><i class="ti ti-activity"></i></span>
+          </div>
+          <div class="col">
+            <div class="font-weight-medium"><%= @stats_by_name["queries_total"] || "?" %> queries</div>
+            <div class="text-secondary"><%= @stats_by_name["active_connections"] || "?" %> active connections · <%= @stats_by_name["query_errors"] || "?" %> errors</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -85,47 +85,100 @@
 <div class="row mt-3 g-3">
   <div class="col-lg-6">
     <div class="card">
-      <div class="card-header"><h3 class="card-title">Gems</h3></div>
+      <div class="card-header"><h3 class="card-title"><i class="ti ti-plug-connected me-1"></i> NodeDB server</h3></div>
       <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-6 text-secondary">
-            <a class="link-secondary" href="https://github.com/mkhairi/nodedb-ruby">nodedb-ruby</a>
-          </dt>
-          <dd class="col-6"><code><%= @adapter_gem[:nodedb_ruby] || "(not loaded)" %></code></dd>
-
-          <dt class="col-6 text-secondary">
-            <a class="link-secondary" href="https://github.com/mkhairi/activerecord-nodedb-adapter">activerecord-nodedb-adapter</a>
-          </dt>
-          <dd class="col-6"><code><%= @adapter_gem[:ar_adapter] || "(not loaded)" %></code></dd>
-
-          <dt class="col-6 text-secondary">pg</dt>
-          <dd class="col-6"><code><%= @adapter_gem[:pg] || "(not loaded)" %></code></dd>
-        </dl>
+        <div class="datagrid">
+          <div class="datagrid-item">
+            <div class="datagrid-title">Version</div>
+            <div class="datagrid-content"><code><%= @server[:version] %></code></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">Transport</div>
+            <div class="datagrid-content">
+              <% if @server[:transport] == "native" %>
+                <span class="badge bg-green-lt">native</span>
+              <% else %>
+                <span class="badge bg-blue-lt">pgwire</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">Transport detail</div>
+            <div class="datagrid-content text-secondary"><%= @server[:transport_detail] %></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">Host : Port</div>
+            <div class="datagrid-content"><code><%= @server[:host] %>:<%= @server[:port] %></code></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">Database</div>
+            <div class="datagrid-content"><code><%= @server[:database] %></code></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">User</div>
+            <div class="datagrid-content"><code><%= @server[:user] %></code></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">application_name</div>
+            <div class="datagrid-content"><code><%= @server[:application_name].presence || "(unset)" %></code></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="col-lg-6">
     <div class="card">
-      <div class="card-header"><h3 class="card-title">Migrations</h3></div>
+      <div class="card-header"><h3 class="card-title"><i class="ti ti-settings me-1"></i> Adapter + runtime</h3></div>
       <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-5 text-secondary">Applied</dt>
-          <dd class="col-7"><code><%= @migrations[:versions].size %></code></dd>
-
-          <dt class="col-5 text-secondary">Versions</dt>
-          <dd class="col-7">
-            <% @migrations[:versions].each do |v| %>
-              <span class="badge bg-blue-lt me-1"><%= v %></span>
-            <% end %>
-          </dd>
-
-          <dt class="col-5 text-secondary">Environment</dt>
-          <dd class="col-7"><code><%= @migrations[:environment] || "(unset)" %></code></dd>
-
-          <dt class="col-5 text-secondary">schema_sha1</dt>
-          <dd class="col-7"><code><%= @migrations[:schema_sha1] || "(unset)" %></code></dd>
-        </dl>
+        <div class="datagrid">
+          <div class="datagrid-item">
+            <div class="datagrid-title">Adapter</div>
+            <div class="datagrid-content"><code><%= @server[:adapter_name] %></code></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">database_version</div>
+            <div class="datagrid-content"><code><%= @server[:database_version] %></code> <span class="text-secondary small">via server_version_num</span></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">Prepared statements</div>
+            <div class="datagrid-content">
+              <% if @server[:prepared] %>
+                <span class="badge bg-blue-lt">enabled</span>
+              <% else %>
+                <span class="badge bg-orange-lt">disabled — simple-query mode</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">ActiveRecord</div>
+            <div class="datagrid-content"><code><%= @server[:ar_version] %></code></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">Rails</div>
+            <div class="datagrid-content"><code><%= @server[:rails_version] %></code></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">Ruby</div>
+            <div class="datagrid-content"><code><%= @server[:ruby_version] %></code></div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">nodedb-ruby</div>
+            <div class="datagrid-content">
+              <a class="link-secondary" href="https://github.com/mkhairi/nodedb-ruby"><code><%= @adapter_gem[:nodedb_ruby] || "(not loaded)" %></code></a>
+            </div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">activerecord-nodedb-adapter</div>
+            <div class="datagrid-content">
+              <a class="link-secondary" href="https://github.com/mkhairi/activerecord-nodedb-adapter"><code><%= @adapter_gem[:ar_adapter] || "(not loaded)" %></code></a>
+            </div>
+          </div>
+          <div class="datagrid-item">
+            <div class="datagrid-title">pg</div>
+            <div class="datagrid-content"><code><%= @adapter_gem[:pg] || "(not loaded)" %></code></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -133,10 +186,37 @@
 
 <div class="card mt-3">
   <div class="card-header">
-    <h3 class="card-title">Collections <span class="badge bg-blue-lt ms-2"><%= @collections.size %></span></h3>
+    <h3 class="card-title"><i class="ti ti-git-commit me-1"></i> Migrations</h3>
+    <div class="text-secondary small ms-auto"><%= @migrations[:versions].size %> applied</div>
+  </div>
+  <div class="card-body">
+    <div class="datagrid">
+      <div class="datagrid-item">
+        <div class="datagrid-title">Versions</div>
+        <div class="datagrid-content">
+          <% @migrations[:versions].each do |v| %>
+            <span class="badge bg-blue-lt me-1"><%= v %></span>
+          <% end %>
+        </div>
+      </div>
+      <div class="datagrid-item">
+        <div class="datagrid-title">Environment</div>
+        <div class="datagrid-content"><code><%= @migrations[:environment] || "(unset)" %></code></div>
+      </div>
+      <div class="datagrid-item">
+        <div class="datagrid-title">schema_sha1</div>
+        <div class="datagrid-content"><code><%= @migrations[:schema_sha1] || "(unset)" %></code></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">
+    <h3 class="card-title"><i class="ti ti-stack-2 me-1"></i> Collections <span class="badge bg-blue-lt ms-2"><%= @collections.size %></span></h3>
   </div>
   <div class="table-responsive">
-    <table class="table table-vcenter card-table">
+    <table class="table table-vcenter card-table table-striped">
       <thead>
         <tr>
           <th>Name</th>
@@ -169,27 +249,167 @@
       </tbody>
     </table>
   </div>
+  <div class="card-footer text-secondary small">
+    Internal collections
+    (<% @internal.each_with_index do |r, i| %><code><%= r["name"] %></code><%= ", " if i < @internal.size - 1 %><% end %>)
+    are managed by <a href="https://github.com/mkhairi/activerecord-nodedb-adapter">activerecord-nodedb-adapter</a>
+    for Rails migration tracking.
+  </div>
 </div>
 
-<div class="card mt-3">
-  <div class="card-header"><h3 class="card-title">Internal collections</h3></div>
-  <div class="card-body small text-secondary">
-    Managed by <a href="https://github.com/mkhairi/activerecord-nodedb-adapter">activerecord-nodedb-adapter</a> for Rails migration tracking.
+<h2 class="mt-4">
+  Tenancy + auth
+</h2>
+<div class="text-secondary">
+  Server-side isolation state: bare <code>SHOW TENANTS</code> /
+  <code>SHOW USERS</code> (superuser session) plus the
+  <code>show_roles</code> and <code>show_tenant(0)</code> adapter helpers.
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">SHOW TENANTS</h3>
+        <div class="text-secondary small ms-auto"><%= @ops_tenants.size %> tenants · request counters live</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter table-sm card-table">
+          <thead>
+            <tr>
+              <th class="text-end">ID</th>
+              <th>Name</th>
+              <th class="text-end">Active</th>
+              <th class="text-end">Total requests</th>
+              <th class="text-end">Rejected</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @ops_tenants.each do |t| %>
+              <tr>
+                <td class="text-end"><code><%= t["tenant_id"] %></code></td>
+                <td>
+                  <% if t["name"].to_s.empty? %>
+                    <span class="badge bg-azure-lt">default</span>
+                  <% else %>
+                    <%= link_to t["name"], tenant_path(t["name"]), class: "fw-bold" %>
+                  <% end %>
+                </td>
+                <td class="text-end"><code><%= t["active_requests"] %></code></td>
+                <td class="text-end"><code><%= t["total_requests"] %></code></td>
+                <td class="text-end"><code><%= t["rejected_requests"] %></code></td>
+              </tr>
+            <% end %>
+            <% if @ops_tenants.empty? %>
+              <tr><td colspan="5" class="text-secondary text-center">— superuser session required —</td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer text-secondary small">
+        Provision tenants on the <%= link_to "multi-tenancy demo", tenants_path %> page.
+      </div>
+    </div>
   </div>
-  <div class="table-responsive">
-    <table class="table table-vcenter card-table">
-      <thead><tr><th>Name</th><th>Owner</th><th>Created</th></tr></thead>
-      <tbody>
-        <% @internal.each do |r| %>
-          <tr>
-            <td><code><%= r["name"] %></code></td>
-            <td class="text-secondary small"><%= r["owner"] %></td>
-            <td class="text-secondary small"><%= Time.at(r["created_at"].to_i).iso8601 %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">SHOW USERS</h3>
+        <div class="text-secondary small ms-auto"><%= @ops_users.size %> users</div>
+      </div>
+      <div class="table-responsive" style="max-height: 320px;">
+        <table class="table table-vcenter table-sm card-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th class="text-end">Tenant</th>
+              <th>Roles</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @ops_users.sort_by { |u| [u["tenant_id"].to_i, u["username"].to_s] }.each do |u| %>
+              <tr>
+                <td>
+                  <code><%= u["username"] %></code>
+                  <% if u["is_superuser"] == true || u["is_superuser"] == "t" %>
+                    <span class="badge bg-red-lt ms-1">superuser</span>
+                  <% end %>
+                </td>
+                <td class="text-end"><code><%= u["tenant_id"] %></code></td>
+                <td class="text-secondary small"><%= u["roles"] %></td>
+              </tr>
+            <% end %>
+            <% if @ops_users.empty? %>
+              <tr><td colspan="3" class="text-secondary text-center">— superuser session required —</td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
+
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">SHOW ROLES</h3>
+        <div class="text-secondary small ms-auto"><%= @ops_roles.size %> rows · defined roles</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-vcenter table-sm card-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Tenant</th>
+              <th>Parent</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @ops_roles.each do |r| %>
+              <tr>
+                <td><code><%= r["name"] %></code></td>
+                <td class="text-secondary"><%= r["tenant_id"] %></td>
+                <td class="text-secondary"><%= r["parent"] %></td>
+                <td class="text-secondary small"><%= r["created_at"] %></td>
+              </tr>
+            <% end %>
+            <% if @ops_roles.empty? %>
+              <tr>
+                <td colspan="4" class="text-secondary text-center small">
+                  No custom roles defined — built-in roles
+                  (<code>superuser</code>, <code>tenant_admin</code>,
+                  <code>readwrite</code>) don't appear here. Add one with
+                  <code>CREATE ROLE &lt;name&gt;</code> over a superuser session.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <% if @ops_tenant %>
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">SHOW TENANT 0 <span class="badge bg-azure-lt ms-2">default tenant</span></h3>
+          <div class="text-secondary small ms-auto">conn.show_tenant(0)</div>
+        </div>
+        <div class="card-body">
+          <div class="datagrid">
+            <% @ops_tenant.each do |k, v| %>
+              <div class="datagrid-item">
+                <div class="datagrid-title"><%= k %></div>
+                <div class="datagrid-content"><code><%= v %></code></div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </div>
 
 <h2 class="mt-4">
@@ -197,8 +417,8 @@
 </h2>
 <div class="text-secondary">
   Surfaced by <code>connection.show_stats</code>,
-  <code>show_metrics</code>, <code>show_memory</code>,
-  <code>show_roles</code>, and <code>show_tenant(0)</code> —
+  <code>show_metrics</code>, <code>show_memory</code>, and
+  <code>graph_stats</code> —
   <code>activerecord-nodedb-adapter</code> ops helpers (real row sets
   on both transports).
 </div>
@@ -252,7 +472,7 @@
     </div>
   </div>
 
-  <div class="col-12">
+  <div class="col-lg-7">
     <div class="card">
       <div class="card-header"><h3 class="card-title">SHOW MEMORY</h3>
         <div class="text-secondary small ms-auto">Per-engine memory budget snapshot</div>
@@ -266,18 +486,27 @@
               <th class="text-end">Limit</th>
               <th class="text-end">Peak</th>
               <th class="text-end">Rejections</th>
-              <th class="text-end">Util %</th>
+              <th>Utilization</th>
             </tr>
           </thead>
           <tbody>
             <% @ops_memory.each do |r| %>
+              <% util = r["utilization_percent"].to_f %>
               <tr>
                 <td><code><%= r["engine"] %></code></td>
-                <td class="text-end"><%= r["allocated_bytes"] %></td>
-                <td class="text-end"><%= r["limit_bytes"] %></td>
-                <td class="text-end"><%= r["peak_bytes"] %></td>
+                <td class="text-end"><%= number_to_human_size(r["allocated_bytes"].to_i) %></td>
+                <td class="text-end"><%= number_to_human_size(r["limit_bytes"].to_i) %></td>
+                <td class="text-end"><%= number_to_human_size(r["peak_bytes"].to_i) %></td>
                 <td class="text-end"><%= r["rejections"] %></td>
-                <td class="text-end"><%= r["utilization_percent"] %></td>
+                <td style="min-width: 8rem;">
+                  <div class="d-flex align-items-center">
+                    <div class="progress progress-sm flex-fill me-2">
+                      <div class="progress-bar bg-<%= util > 80 ? "red" : util > 50 ? "yellow" : "green" %>"
+                           style="width: <%= [util, 100].min %>%"></div>
+                    </div>
+                    <span class="text-secondary small"><%= util %>%</span>
+                  </div>
+                </td>
               </tr>
             <% end %>
             <% if @ops_memory.empty? %>
@@ -289,65 +518,42 @@
     </div>
   </div>
 
-  <div class="col-lg-6">
+  <div class="col-lg-5">
     <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">SHOW ROLES</h3>
-        <div class="text-secondary small ms-auto"><%= @ops_roles.size %> rows · defined roles</div>
+      <div class="card-header"><h3 class="card-title">SHOW GRAPH STATS</h3>
+        <div class="text-secondary small ms-auto">O(1) persistent counters</div>
       </div>
       <div class="table-responsive">
         <table class="table table-vcenter table-sm card-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Tenant</th>
-              <th>Parent</th>
-              <th>Created</th>
+              <th>Collection</th>
+              <th class="text-end">Nodes</th>
+              <th class="text-end">Edges</th>
+              <th>Labels</th>
             </tr>
           </thead>
           <tbody>
-            <% @ops_roles.each do |r| %>
+            <% @ops_graph.each do |g| %>
               <tr>
-                <td><code><%= r["name"] %></code></td>
-                <td class="text-secondary"><%= r["tenant_id"] %></td>
-                <td class="text-secondary"><%= r["parent"] %></td>
-                <td class="text-secondary small"><%= r["created_at"] %></td>
-              </tr>
-            <% end %>
-            <% if @ops_roles.empty? %>
-              <tr>
-                <td colspan="4" class="text-secondary text-center small">
-                  No roles defined yet — use
-                  <code>CREATE ROLE &lt;name&gt;</code> over psql or a
-                  superuser session. NodeDB v0.3.0 also accepts
-                  <code>WITH ADMIN</code> on auth DDL.
+                <td><code><%= g["collection"] %></code></td>
+                <td class="text-end"><code><%= g["node_count"] %></code></td>
+                <td class="text-end"><code><%= g["edge_count"] %></code></td>
+                <td class="small">
+                  <% Array(g["labels"]).each do |l| %>
+                    <span class="badge bg-indigo-lt me-1"><%= l["label"] %> ×<%= l["count"] %></span>
+                  <% end %>
                 </td>
               </tr>
+            <% end %>
+            <% if @ops_graph.empty? %>
+              <tr><td colspan="4" class="text-secondary text-center">— no graph collections —</td></tr>
             <% end %>
           </tbody>
         </table>
       </div>
     </div>
   </div>
-
-  <% if @ops_tenant %>
-    <div class="col-lg-6">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">SHOW TENANT 0 <span class="badge bg-azure-lt ms-2">default tenant</span></h3>
-          <div class="text-secondary small ms-auto">conn.show_tenant(0)</div>
-        </div>
-        <div class="card-body">
-          <dl class="row mb-0">
-            <% @ops_tenant.each do |k, v| %>
-              <dt class="col-4 text-secondary"><%= k %></dt>
-              <dd class="col-8"><code><%= v %></code></dd>
-            <% end %>
-          </dl>
-        </div>
-      </div>
-    </div>
-  <% end %>
 </div>
 
 <div class="text-secondary small mt-3 mb-4">

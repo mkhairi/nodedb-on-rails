@@ -73,6 +73,16 @@ class ServerInfoController < ApplicationController
     @ops_memory  = safe_show_array(conn, :show_memory)
     @ops_roles   = safe_show_array(conn, :show_roles)
     @ops_tenant  = safe_show_tenant(conn, 0)
+
+    # Bare SHOW TENANTS / SHOW USERS need a superuser session and have no
+    # adapter helper yet — raw execute, failing closed like the rest.
+    @ops_tenants = safe_rows(conn, "SHOW TENANTS")
+    @ops_users   = safe_rows(conn, "SHOW USERS")
+    @ops_graph   = safe_show_array(conn, :graph_stats).map do |g|
+      g.merge("labels" => parse_labels(g["labels"]))
+    end
+
+    @stats_by_name = @ops_stats.to_h { |r| [r["name"], r["value"]] }
   end
 
   private
@@ -97,6 +107,22 @@ class ServerInfoController < ApplicationController
     return [] unless conn.respond_to?(method)
 
     conn.public_send(method)
+  rescue StandardError
+    []
+  end
+
+  # SHOW GRAPH STATS emits labels as a JSON array string,
+  # e.g. [{"count":4,"label":"follows"}].
+  def parse_labels(value)
+    return value if value.is_a?(Array)
+
+    JSON.parse(value.to_s)
+  rescue JSON::ParserError
+    []
+  end
+
+  def safe_rows(conn, sql)
+    conn.execute(sql).to_a
   rescue StandardError
     []
   end
