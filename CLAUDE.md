@@ -23,7 +23,7 @@ Status: **alpha demo** (`0.1.0.alpha.1`). Disposable data only.
 bundle install                                          # gems via github:
 bundle exec ruby bin/setup                              # bootstrap migrations + dump db/schema.rb
 bundle exec ruby bin/rails runner db/seeds.rb           # seed across every engine
-bundle exec ruby bin/rails runner scripts/feature_smoke.rb   # 29/29 engine smoke
+bundle exec ruby bin/rails runner scripts/feature_smoke.rb   # 33-check engine smoke
 bundle exec rails server -p 3737 -b 127.0.0.1           # browse http://127.0.0.1:3737/
 ```
 

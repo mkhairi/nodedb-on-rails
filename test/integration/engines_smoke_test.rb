@@ -60,7 +60,6 @@ class EnginesSmokeTest < ActionDispatch::IntegrationTest
   end
 
   test "kv set + get + delete" do
-    skip_native "native KV read shape mismatch (BUG-018, issue #45)"
 
     key = "smoke_kv_#{SecureRandom.hex(4)}"
     KvSession.kv_set(key, "v1")
@@ -70,7 +69,6 @@ class EnginesSmokeTest < ActionDispatch::IntegrationTest
   end
 
   test "vector search returns surrogate + distance rows" do
-    skip_native "vector.search distance returns nil on native (BUG-018, issue #45)"
 
     embedding = Array.new(3) { rand.to_f }
     rows = Embedding.search_vector(:embedding, embedding, limit: 1)

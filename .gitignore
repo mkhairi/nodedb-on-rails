@@ -25,3 +25,7 @@ vendor/cache
 
 # Local Gemfile override — for monorepo dev against path: gems
 /Gemfile.local
+
+# JS tooling artifacts (importmap app; yarn only used ad-hoc)
+/node_modules
+/yarn.lock
