@@ -31,14 +31,12 @@
             <%= link_to root_path, class: "d-flex align-items-center text-reset text-decoration-none" do %>
               <i class="ti ti-database me-2 text-primary"></i>
               <span>NodeDB On Rails</span>
-              <span class="badge bg-yellow-lt ms-2">alpha</span>
             <% end %>
           </h1>
-
-          <div class="collapse navbar-collapse" id="sidebar-menu">
+          <span class="ribbon ribbon-start bg-yellow-lt mt-5">alpha</span>
+          <div class="collapse navbar-collapse mt-5" id="sidebar-menu">
             <ul class="navbar-nav pt-lg-3">
               <% [
-                ["home",      root_path,          "ti-home",             "Home"],
                 ["articles",  articles_path,      "ti-files",            "Articles"],
                 ["posts",     posts_path,         "ti-search",           "Posts (FTS)"],
                 ["locations", locations_path,     "ti-map-pin",          "Locations & Map"],
@@ -109,6 +107,14 @@
                   <li class="list-inline-item">
                     <a href="https://github.com/mkhairi/nodedb-on-rails"
                        class="link-secondary">nodedb-on-rails</a>
+                  </li>
+                  <li class="list-inline-item">
+                    <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues?q=%22%5Bupstream%3ANodeDB%5D%22"
+                       class="link-secondary">bug tracker</a>
+                  </li>
+                  <li class="list-inline-item">
+                    <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md"
+                       class="link-secondary">known issues</a>
                   </li>
                 </ul>
               </div>
