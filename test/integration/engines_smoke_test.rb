@@ -32,14 +32,21 @@ class EnginesSmokeTest < ActionDispatch::IntegrationTest
   end
 
   test "graph engine inserts edges and traverses" do
+    # Run-unique edge type: NodeDB never re-materializes a deleted
+    # (from, to, type) edge — re-inserting after a previous run's
+    # ensure-delete is a silent no-op, so a fixed type would traverse
+    # empty on every run after the first clean delete.
+    edge_type = "smokes_#{SecureRandom.hex(4)}"
     SocialNode.find_or_create_by!(id: "smoke_root") { |n| n.name = "Smoke Root" }
     SocialNode.find_or_create_by!(id: "smoke_leaf") { |n| n.name = "Smoke Leaf" }
-    SocialNode.graph_insert_edge(from: "smoke_root", to: "smoke_leaf", type: "smokes")
+    SocialNode.graph_insert_edge(from: "smoke_root", to: "smoke_leaf", type: edge_type)
 
     reachable = SocialNode.graph_traverse(from: "smoke_root", depth: 1)
     assert_includes reachable, "smoke_leaf"
   ensure
-    SocialNode.graph_delete_edge(from: "smoke_root", to: "smoke_leaf", type: "smokes") rescue nil
+    if edge_type
+      SocialNode.graph_delete_edge(from: "smoke_root", to: "smoke_leaf", type: edge_type) rescue nil
+    end
   end
 
   test "graph_stats returns rows scoped to the social_nodes collection" do
