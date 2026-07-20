@@ -36,8 +36,9 @@ NODEDB_TRANSPORT=native bundle exec ruby bin/rails runner scripts/feature_smoke.
 ```
 
 Note: dev and test environments share the default `nodedb` database
-(CREATE DATABASE'd databases are unusable upstream — BUG-032 in the
-adapter's issue tracker).
+by convention (CREATE DATABASE'd databases were unusable for most of
+the alpha — BUG-032 in the adapter's issue tracker, since fixed
+upstream).
 
 Drop a `Gemfile.local` (gitignored) for monorepo dev against local gem
 checkouts; the main `Gemfile` evaluates it when present.

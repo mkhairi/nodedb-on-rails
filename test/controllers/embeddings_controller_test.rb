@@ -9,9 +9,6 @@ class EmbeddingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /embeddings/search returns 200 (vector index)" do
-    # Native transport fails with `TypeError: no implicit conversion
-    # of nil into String` for vector.search (BUG-018).
-
     get search_embeddings_path, params: { q: "rails" }
     assert_response :success
   end
