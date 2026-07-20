@@ -2,7 +2,11 @@ class ArticlesController < ApplicationController
   before_action :set_article, only: %i[show edit update destroy]
 
   def index
-    @articles = Article.all.to_a
+    # Ruby-side filter: after a daemon restart the articles shard can
+    # surface ghost tuples that scan as all-NULL rows and match no SQL
+    # predicate (not even IS NULL — that matches real rows instead), so
+    # they can't be excluded or deleted server-side (upstream, BUG-052).
+    @articles = Article.all.to_a.select { |a| a.id.present? }
   end
 
   def show; end
