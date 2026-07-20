@@ -36,7 +36,10 @@
 <%= javascript_include_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" %>
 <%= stylesheet_link_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" %>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
+  // Boot when Leaflet is ready: DOMContentLoaded never fires on Turbo Drive
+  // visits, and the leaflet.js include loads async under a body swap.
+  (function boot() {
+    if (!window.L) return setTimeout(boot, 50);
     const latInput = document.getElementsByName("location[lat]")[0];
     const lonInput = document.getElementsByName("location[lon]")[0];
     const m = L.map("picker").setView([+latInput.value, +lonInput.value], 4);
@@ -52,5 +55,5 @@
       latInput.value = e.latlng.lat.toFixed(6);
       lonInput.value = e.latlng.lng.toFixed(6);
     });
-  });
+  })();
 </script>

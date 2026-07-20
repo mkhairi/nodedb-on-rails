@@ -18,10 +18,13 @@
 <%= javascript_include_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" %>
 <%= stylesheet_link_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" %>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
+  // Boot when Leaflet is ready: DOMContentLoaded never fires on Turbo Drive
+  // visits, and the leaflet.js include loads async under a body swap.
+  (function boot() {
+    if (!window.L) return setTimeout(boot, 50);
     const lat = <%= @location.lat %>, lon = <%= @location.lon %>;
     const m = L.map("map").setView([lat, lon], 10);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OSM" }).addTo(m);
     L.marker([lat, lon]).addTo(m).bindPopup(<%= @location.name.to_json.html_safe %>).openPopup();
-  });
+  })();
 </script>
