@@ -1,37 +1,37 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Docs</h2>
-      <div class="text-secondary">
-        How each demo works — the NodeDB DDL, the model code, and the
-        quirks the adapter absorbs. Deep reference lives in the
-        <a href="https://github.com/mkhairi/activerecord-nodedb-adapter">adapter repo</a>.
-      </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Docs</h1>
+    <div class="text-muted-foreground">
+      How each demo works — the NodeDB DDL, the model code, and the
+      quirks the adapter absorbs. Deep reference lives in the
+      <a href="https://github.com/mkhairi/activerecord-nodedb-adapter">adapter repo</a>.
     </div>
   </div>
 </div>
 
-<div class="row mt-3 g-3">
-  <div class="col-lg-3">
-    <div class="card sticky-top" style="top: 1rem;">
-      <div class="list-group list-group-flush">
-        <% [
-          %w[Setup setup], %w[Transports transports], %w[Documents documents],
-          ["Full-text search", "fts"], %w[Spatial spatial], %w[Graph graph],
-          %w[Timeseries timeseries], %w[Vector vector], ["Key-value", "kv"],
-          %w[Bitemporal bitemporal], %w[Tenants tenants],
-          ["Adapter features", "adapter"], ["Operating notes", "operating-notes"]
-        ].each do |label, anchor| %>
-          <a class="list-group-item list-group-item-action" href="#<%= anchor %>"><%= label %></a>
-        <% end %>
-      </div>
+<div class="mt-4 grid gap-4 lg:grid-cols-12">
+  <div class="lg:col-span-3">
+    <div class="card sticky top-4" data-size="sm">
+      <section>
+        <nav class="flex flex-col gap-1">
+          <% [
+            %w[Setup setup], %w[Transports transports], %w[Documents documents],
+            ["Full-text search", "fts"], %w[Spatial spatial], %w[Graph graph],
+            %w[Timeseries timeseries], %w[Vector vector], ["Key-value", "kv"],
+            %w[Bitemporal bitemporal], %w[Tenants tenants],
+            ["Adapter features", "adapter"], ["Operating notes", "operating-notes"]
+          ].each do |label, anchor| %>
+            <a class="btn justify-start" data-variant="ghost" data-size="sm" href="#<%= anchor %>"><%= label %></a>
+          <% end %>
+        </nav>
+      </section>
     </div>
   </div>
 
-  <div class="col-lg-9">
+  <div class="lg:col-span-9">
     <div class="card" id="setup">
-      <div class="card-header"><h3 class="card-title">Setup</h3></div>
-      <div class="card-body">
+      <header><h2>Setup</h2></header>
+      <section>
         <p>NodeDB must be running locally (pgwire <code>:6432</code>). The app
         reads the auto-generated superuser password from
         <code>~/.local/share/nodedb/.superuser_password</code>.</p>
@@ -39,26 +39,26 @@
 bundle exec ruby bin/setup                     # tracking collections + migrations
 bundle exec ruby bin/rails runner db/seeds.rb  # seed every engine
 bundle exec rails server -p 3737 -b 127.0.0.1</code></pre>
-        <p class="text-secondary small mb-0">Monorepo development: drop a
+        <p class="text-muted-foreground text-sm mb-0">Monorepo development: drop a
         gitignored <code>Gemfile.local</code> with <code>path:</code> sources
         for the two gems.</p>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="transports">
-      <div class="card-header"><h3 class="card-title">Transports</h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="transports">
+      <header><h2>Transports</h2></header>
+      <section>
         <p><code>database.yml</code> is env-driven: pgwire (libpq) by default,
         NodeDB's native binary protocol with
         <code>NODEDB_TRANSPORT=native</code> (port 6433, no libpq). Both are at
         full result-shape parity — the whole suite runs green on each.</p>
 <pre><code>NODEDB_TRANSPORT=native bundle exec rails server -p 3737 -b 127.0.0.1</code></pre>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="documents">
-      <div class="card-header"><h3 class="card-title">Documents — <%= link_to "Articles", articles_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="documents">
+      <header><h2>Documents — <%= link_to "Articles", articles_path %></h2></header>
+      <section>
         <p>Collections come from engine-aware migration helpers; models are
         plain ActiveRecord. The adapter dequalifies AR's table-qualified SQL
         (NodeDB matches zero rows on qualified refs) so hash-conditions,
@@ -74,12 +74,12 @@ class Article &lt; ApplicationRecord
   validates :title, presence: true
   before_create { self.id ||= SecureRandom.uuid }
 end</code></pre>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="fts">
-      <div class="card-header"><h3 class="card-title">Full-text search — <%= link_to "Posts", posts_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="fts">
+      <header><h2>Full-text search — <%= link_to "Posts", posts_path %></h2></header>
+      <section>
         <p>FTS is a document collection plus <code>CREATE FULLTEXT INDEX</code>
         per searchable column (<code>create_fts</code> emits both). The
         <code>NodeDB::FullTextSearch</code> concern exposes ranked and fuzzy
@@ -91,38 +91,38 @@ end
 
 Post.fts_search("machine learning", limit: 20)
 Post.fts_search("nural networks", fuzzy: true)</code></pre>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="spatial">
-      <div class="card-header"><h3 class="card-title">Spatial — <%= link_to "Locations", locations_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="spatial">
+      <header><h2>Spatial — <%= link_to "Locations", locations_path %></h2></header>
+      <section>
         <p>Geometry writes work (<code>ST_MakePoint</code> /
         <code>ST_GeomFromText</code> store GeoJSON); read-side predicates
         (<code>ST_DWithin</code>, <code>ST_X</code>…) are still broken
         upstream, so radius search runs haversine in Ruby over the loaded
         collection.</p>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="graph">
-      <div class="card-header"><h3 class="card-title">Graph — <%= link_to "Social Graph", social_nodes_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="graph">
+      <header><h2>Graph — <%= link_to "Social Graph", social_nodes_path %></h2></header>
+      <section>
         <p>The <code>NodeDB::Graph</code> concern wraps edge inserts,
         traversal, and PageRank. Collection names go into graph DDL bare —
         quoted identifiers create edge-store keys scoped lookups miss.</p>
 <pre><code>SocialNode.graph_insert_edge(from: "alice", to: "bob", type: "follows")
 SocialNode.graph_traverse(from: "alice", depth: 2)
 SocialNode.graph_algo(:pagerank)</code></pre>
-        <p class="text-secondary small mb-0">Upstream caveat: <code>MATCH …
+        <p class="text-muted-foreground text-sm mb-0">Upstream caveat: <code>MATCH …
         IN collection</code> ignores its scope — the concern doesn't expose
         MATCH until that's fixed.</p>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="timeseries">
-      <div class="card-header"><h3 class="card-title">Timeseries — <%= link_to "Metrics", metrics_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="timeseries">
+      <header><h2>Timeseries — <%= link_to "Metrics", metrics_path %></h2></header>
+      <section>
         <p>TIME_KEY collections with <code>time_bucket</code> aggregates. The
         realtime panel polls <code>/metrics/live</code> every 3s; each tick
         INSERTs three system gauges (CPU load, process RSS, disk usage — via
@@ -136,16 +136,16 @@ SocialNode.graph_algo(:pagerank)</code></pre>
 end
 
 Metric.since(1.hour.ago).where(host: "sys.cpu_load")</code></pre>
-        <p class="text-secondary small mb-0">Quirks: the TIME_KEY column is
+        <p class="text-muted-foreground text-sm mb-0">Quirks: the TIME_KEY column is
         renamed to <code>timestamp</code> on projection (the model aliases it
         back); AR's transaction-wrapped INSERT trips MVCC on timeseries
         collections, so writes are raw autocommit statements.</p>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="vector">
-      <div class="card-header"><h3 class="card-title">Vector — <%= link_to "Embeddings", embeddings_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="vector">
+      <header><h2>Vector — <%= link_to "Embeddings", embeddings_path %></h2></header>
+      <section>
 <pre><code>class Embedding &lt; ApplicationRecord
   include NodeDB::Vector
   vector_column :embedding, dim: 3
@@ -153,15 +153,15 @@ end
 
 Embedding.search_vector(:embedding, [0.1, 0.2, 0.3], limit: 5)
 # =&gt; [{ "id" =&gt; ..., "surrogate" =&gt; ..., "distance" =&gt; 0.0 }, ...]</code></pre>
-        <p class="text-secondary small mb-0"><code>SEARCH</code> can't nest in
+        <p class="text-muted-foreground text-sm mb-0"><code>SEARCH</code> can't nest in
         subqueries and rejects quoted identifiers; <code>id</code> is the
         document id only on vector-engine collections.</p>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="kv">
-      <div class="card-header"><h3 class="card-title">Key-value — <%= link_to "KV Store", kv_sessions_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="kv">
+      <header><h2>Key-value — <%= link_to "KV Store", kv_sessions_path %></h2></header>
+      <section>
 <pre><code>class KvSession &lt; ApplicationRecord
   include NodeDB::KV
   self.primary_key = :key
@@ -169,12 +169,12 @@ end
 
 KvSession.kv_set("sess_abc", "token-xyz", ttl: 3600)
 KvSession.kv_get("sess_abc")</code></pre>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="bitemporal">
-      <div class="card-header"><h3 class="card-title">Bitemporal — <%= link_to "Audit logs", audit_logs_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="bitemporal">
+      <header><h2>Bitemporal — <%= link_to "Audit logs", audit_logs_path %></h2></header>
+      <section>
         <p>BITEMPORAL collections retain every committed version. Reads and
         writes are plain ActiveRecord; time travel comes from the
         <code>NodeDB::Bitemporal</code> concern.</p>
@@ -185,15 +185,15 @@ end
 AuditLog.versions          # full trail, each row + _ts_system
 AuditLog.history("l-42")   # one record's versions
 AuditLog.as_of(1.hour.ago) # rows current at that instant</code></pre>
-        <p class="text-secondary small mb-0">Never DROP + CREATE a bitemporal
+        <p class="text-muted-foreground text-sm mb-0">Never DROP + CREATE a bitemporal
         collection under the same name — the old history resurrects
         (upstream bug).</p>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="tenants">
-      <div class="card-header"><h3 class="card-title">Tenants — <%= link_to "Tenants", tenants_path %></h3></div>
-      <div class="card-body">
+    <div class="card mt-4" id="tenants">
+      <header><h2>Tenants — <%= link_to "Tenants", tenants_path %></h2></header>
+      <section>
         <p>Tenancy binds per <em>user</em>, per <em>connection</em> — there is
         no <code>SET TENANT</code>. Provisioning runs <code>CREATE
         TENANT</code> + <code>CREATE USER … TENANT</code> +
@@ -201,36 +201,36 @@ AuditLog.as_of(1.hour.ago) # rows current at that instant</code></pre>
         connection as that user and proves the isolation boundary (the default
         tenant's collections are invisible from inside). Provision-only:
         dropping users bricks the daemon's boot integrity check upstream.</p>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="adapter">
-      <div class="card-header"><h3 class="card-title">Adapter features this app leans on</h3></div>
-      <div class="card-body">
-        <ul class="mb-0">
+    <div class="card mt-4" id="adapter">
+      <header><h2>Adapter features this app leans on</h2></header>
+      <section>
+        <ul class="mb-0 list-disc space-y-1 pl-5">
           <li><strong>Qualified-SQL dequalifier</strong> — AR's <code>"table"."col"</code> refs rewritten before dispatch (NodeDB silently zero-matches them).</li>
           <li><strong>GROUP BY re-aliasing</strong> — upstream drops group-key aliases; the adapter maps them back so <code>group(...).sum</code> works.</li>
           <li><strong>NodeDB-aware schema tracking</strong> — <code>schema_migrations</code> / <code>ar_internal_metadata</code> as document collections; <code>db:migrate</code>, rollback, and the schema dump all work.</li>
           <li><strong>Advisory locks</strong> — collection-based migration mutex plus a <code>with_advisory_lock</code> block API (NodeDB has no <code>pg_advisory_lock</code>).</li>
           <li><strong>Engine concerns</strong> — <code>Vector</code>, <code>Graph</code>, <code>Timeseries</code>, <code>Spatial</code>, <code>KV</code>, <code>FullTextSearch</code>, <code>Bitemporal</code>.</li>
         </ul>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3" id="operating-notes">
-      <div class="card-header"><h3 class="card-title">Operating notes (current upstream)</h3></div>
-      <div class="card-body">
-        <ul class="mb-2">
+    <div class="card mt-4" id="operating-notes">
+      <header><h2>Operating notes (current upstream)</h2></header>
+      <section>
+        <ul class="mb-2 list-disc space-y-1 pl-5">
           <li><strong>Daemon restarts lose document-collection contents</strong> — counts and PK indexes survive, the data doesn't. Wipe the data dir and re-run <code>bin/setup</code> + seeds after any restart.</li>
           <li><strong>Shared default database</strong> — databases created via <code>CREATE DATABASE</code> are write-only upstream; dev and test both use <code>nodedb</code>.</li>
           <li><strong>Transient auth rejections</strong> — bursts of fresh connections can see <code>Password authentication failed</code> with correct credentials; retry ~1s. Pooled Rails connections are unaffected.</li>
         </ul>
-        <div class="text-secondary small">
+        <div class="text-muted-foreground text-sm">
           Full bug log with reproductions:
           <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues?q=%22%5Bupstream%3ANodeDB%5D%22">adapter issue tracker</a> ·
           rollup in <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md">KNOWN_ISSUES.md</a>.
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </div>

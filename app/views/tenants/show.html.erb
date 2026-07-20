@@ -1,127 +1,129 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">
-        Tenant: <code><%= @tenant.id %></code>
-        <span class="badge bg-azure-lt ms-2">ISOLATED SESSION</span>
-      </h2>
-      <div class="text-secondary">
-        Everything below ran over a fresh <code>NodeDB::Connection</code>
-        authenticated as <code><%= @tenant.username %></code> — inside this
-        tenant's isolation boundary, not the app's superuser connection.
-      </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">
+      Tenant: <code><%= @tenant.id %></code>
+      <span class="badge text-sky-600 ml-2" data-variant="outline">ISOLATED SESSION</span>
+    </h1>
+    <div class="text-muted-foreground">
+      Everything below ran over a fresh <code>NodeDB::Connection</code>
+      authenticated as <code><%= @tenant.username %></code> — inside this
+      tenant's isolation boundary, not the app's superuser connection.
     </div>
-    <div class="col-auto">
-      <%= link_to tenants_path, class: "btn" do %>
-        <i class="ti ti-arrow-left me-1"></i> All tenants
-      <% end %>
-    </div>
+  </div>
+  <div class="flex gap-2">
+    <%= link_to tenants_path, class: "btn", data: { variant: "outline" } do %>
+      <i class="ti ti-arrow-left mr-1"></i> All tenants
+    <% end %>
   </div>
 </div>
 
-<div class="row mt-3 g-3">
-  <div class="col-lg-6">
-    <div class="card h-100">
-      <div class="card-header">
-        <h3 class="card-title">Isolation proof</h3>
-      </div>
-      <div class="card-body">
-        <p class="text-secondary small mb-2">
+<div class="mt-4 grid gap-4 lg:grid-cols-2">
+  <div class="space-y-4">
+    <div class="card">
+      <header>
+        <h2>Isolation proof</h2>
+      </header>
+      <section>
+        <p class="text-muted-foreground text-sm mb-2">
           The default tenant's <code>articles</code> collection exists and is
           readable on the app's normal connection — but from this tenant's
           session the same query fails:
         </p>
         <div class="mb-2"><code>SELECT id FROM articles LIMIT 1</code></div>
         <% if @isolation_error %>
-          <div class="alert alert-success mb-0">
-            <i class="ti ti-shield-check me-1"></i>
-            <code><%= @isolation_error %></code>
+          <div class="alert" role="alert">
+            <i class="ti ti-shield-check"></i>
+            <h2><code><%= @isolation_error %></code></h2>
           </div>
         <% else %>
-          <div class="alert alert-danger mb-0">
-            <i class="ti ti-shield-x me-1"></i>
-            Query unexpectedly succeeded — isolation boundary not enforced!
+          <div class="alert" role="alert" data-variant="destructive">
+            <i class="ti ti-shield-x"></i>
+            <h2>Query unexpectedly succeeded — isolation boundary not enforced!</h2>
           </div>
         <% end %>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3">
-      <div class="card-header">
-        <h3 class="card-title">This tenant's collections</h3>
-        <div class="text-secondary small ms-auto"><code>SHOW COLLECTIONS</code> as <code><%= @tenant.username %></code></div>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-vcenter table-sm card-table">
-          <thead><tr><th>Name</th><th>Owner</th></tr></thead>
-          <tbody>
-            <% @collections.each do |c| %>
-              <tr>
-                <td><code><%= c["name"] %></code></td>
-                <td class="text-secondary small"><%= c["owner"] %></td>
-              </tr>
-            <% end %>
-            <% if @collections.empty? %>
-              <tr><td colspan="2" class="text-secondary text-center">No collections yet.</td></tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
+    <div class="card">
+      <header>
+        <h2>This tenant's collections</h2>
+        <div class="card-action text-muted-foreground text-sm"><code>SHOW COLLECTIONS</code> as <code><%= @tenant.username %></code></div>
+      </header>
+      <section>
+        <div class="table-container">
+          <table class="table">
+            <thead><tr><th>Name</th><th>Owner</th></tr></thead>
+            <tbody>
+              <% @collections.each do |c| %>
+                <tr>
+                  <td><code><%= c["name"] %></code></td>
+                  <td class="text-muted-foreground text-sm"><%= c["owner"] %></td>
+                </tr>
+              <% end %>
+              <% if @collections.empty? %>
+                <tr><td colspan="2" class="text-muted-foreground text-center">No collections yet.</td></tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
 
     <% if @counters %>
-      <div class="card mt-3">
-        <div class="card-header">
-          <h3 class="card-title">Counters</h3>
-          <div class="text-secondary small ms-auto"><code>SHOW TENANT <%= @tenant.id %></code></div>
-        </div>
-        <div class="card-body">
-          <dl class="row mb-0">
+      <div class="card">
+        <header>
+          <h2>Counters</h2>
+          <div class="card-action text-muted-foreground text-sm"><code>SHOW TENANT <%= @tenant.id %></code></div>
+        </header>
+        <section>
+          <dl class="grid gap-x-8 gap-y-2 sm:grid-cols-2">
             <% @counters.each do |k, v| %>
-              <dt class="col-6 text-secondary"><%= k %></dt>
-              <dd class="col-6"><code><%= v %></code></dd>
+              <dt class="text-sm text-muted-foreground"><%= k %></dt>
+              <dd class="font-medium"><code><%= v %></code></dd>
             <% end %>
           </dl>
-        </div>
+        </section>
       </div>
     <% end %>
   </div>
 
-  <div class="col-lg-6">
-    <div class="card h-100">
-      <div class="card-header">
-        <h3 class="card-title">Notes <span class="badge bg-blue-lt ms-2">tenant_notes</span></h3>
-        <div class="text-secondary small ms-auto"><%= @notes.size %> rows · written inside the tenant</div>
-      </div>
-      <div class="card-body border-bottom">
+  <div>
+    <div class="card h-full">
+      <header>
+        <h2>Notes <span class="badge text-blue-600 ml-2" data-variant="outline">tenant_notes</span></h2>
+        <div class="card-action text-muted-foreground text-sm"><%= @notes.size %> rows · written inside the tenant</div>
+      </header>
+      <section class="border-b pb-4">
         <%= form_with url: add_note_tenant_path(@tenant), method: :post, local: true do |f| %>
-          <div class="input-group">
-            <%= f.text_field :body, class: "form-control", placeholder: "note body…" %>
-            <%= f.submit "Add note", class: "btn btn-primary" %>
+          <div class="flex gap-2">
+            <%= f.text_field :body, class: "input", placeholder: "note body…" %>
+            <%= f.submit "Add note", class: "btn" %>
           </div>
-          <div class="form-hint mt-1">
+          <p class="text-muted-foreground text-sm mt-1">
             The <code>tenant_notes</code> collection is created on first use —
             by the tenant user, homed to this tenant.
-          </div>
+          </p>
         <% end %>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-vcenter card-table">
-          <thead><tr><th>Created</th><th>Body</th><th>Id</th></tr></thead>
-          <tbody>
-            <% @notes.each do |n| %>
-              <tr>
-                <td class="text-secondary small"><%= n["created_at"] %></td>
-                <td><%= n["body"] %></td>
-                <td class="text-secondary small"><code><%= n["id"] %></code></td>
-              </tr>
-            <% end %>
-            <% if @notes.empty? %>
-              <tr><td colspan="3" class="text-secondary text-center">No notes yet — add one above.</td></tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
+      </section>
+      <section>
+        <div class="table-container">
+          <table class="table">
+            <thead><tr><th>Created</th><th>Body</th><th>Id</th></tr></thead>
+            <tbody>
+              <% @notes.each do |n| %>
+                <tr>
+                  <td class="text-muted-foreground text-sm"><%= n["created_at"] %></td>
+                  <td><%= n["body"] %></td>
+                  <td class="text-muted-foreground text-sm"><code><%= n["id"] %></code></td>
+                </tr>
+              <% end %>
+              <% if @notes.empty? %>
+                <tr><td colspan="3" class="text-muted-foreground text-center">No notes yet — add one above.</td></tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </div>
 </div>

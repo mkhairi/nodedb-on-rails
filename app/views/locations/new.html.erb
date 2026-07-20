@@ -1,34 +1,36 @@
-<div class="page-header"><h2 class="page-title">Pin a new location</h2></div>
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Pin a new location</h1>
+</div>
 
-<div class="card mt-3">
-  <div class="card-body">
-    <%= form_with url: locations_path, method: :post, local: true do |f| %>
-      <div class="mb-3">
-        <%= f.label "location[name]", "Name", class: "form-label" %>
-        <%= f.text_field "location[name]", class: "form-control" %>
+<div class="card mt-4">
+  <section>
+    <%= form_with url: locations_path, method: :post, local: true, html: { class: "space-y-6" } do |f| %>
+      <div role="group" class="field">
+        <%= f.label "location[name]", "Name" %>
+        <%= f.text_field "location[name]", class: "input" %>
       </div>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <%= f.label "location[lat]", "Latitude", class: "form-label" %>
-          <%= f.number_field "location[lat]", step: "any", value: @location.lat, class: "form-control" %>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div role="group" class="field">
+          <%= f.label "location[lat]", "Latitude" %>
+          <%= f.number_field "location[lat]", step: "any", value: @location.lat, class: "input" %>
         </div>
-        <div class="col-md-6 mb-3">
-          <%= f.label "location[lon]", "Longitude", class: "form-label" %>
-          <%= f.number_field "location[lon]", step: "any", value: @location.lon, class: "form-control" %>
+        <div role="group" class="field">
+          <%= f.label "location[lon]", "Longitude" %>
+          <%= f.number_field "location[lon]", step: "any", value: @location.lon, class: "input" %>
         </div>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Map picker <span class="form-label-description text-secondary">click or drag the marker</span></label>
-        <div id="picker" style="height: 320px; border: 1px solid var(--tblr-border-color); border-radius: var(--tblr-border-radius);"></div>
+      <div role="group" class="field">
+        <label>Map picker <span class="text-muted-foreground">click or drag the marker</span></label>
+        <div id="picker" class="rounded-md border" style="height: 320px;"></div>
       </div>
 
-      <div class="btn-list">
-        <%= f.submit "Save", class: "btn btn-primary" %>
-        <%= link_to "Cancel", locations_path, class: "btn" %>
+      <div class="flex flex-wrap gap-2">
+        <%= f.submit "Save", class: "btn" %>
+        <%= link_to "Cancel", locations_path, class: "btn", data: { variant: "outline" } %>
       </div>
     <% end %>
-  </div>
+  </section>
 </div>
 
 <%= javascript_include_tag "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" %>

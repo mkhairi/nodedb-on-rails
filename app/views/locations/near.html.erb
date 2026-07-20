@@ -1,32 +1,34 @@
-<div class="page-header"><h2 class="page-title">Find near</h2></div>
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Find near</h1>
+</div>
 
-<div class="card mt-3">
-  <div class="card-body">
-    <%= form_with url: near_locations_path, method: :get, local: true, class: "row g-2" do |f| %>
-      <div class="col-md-3">
-        <%= f.label :lat, "Center lat", class: "form-label" %>
-        <%= f.number_field :lat, step: "any", value: @lat, class: "form-control" %>
+<div class="card mt-4">
+  <section>
+    <%= form_with url: near_locations_path, method: :get, local: true, class: "grid gap-2 md:grid-cols-4" do |f| %>
+      <div role="group" class="field">
+        <%= f.label :lat, "Center lat" %>
+        <%= f.number_field :lat, step: "any", value: @lat, class: "input" %>
       </div>
-      <div class="col-md-3">
-        <%= f.label :lon, "Center lon", class: "form-label" %>
-        <%= f.number_field :lon, step: "any", value: @lon, class: "form-control" %>
+      <div role="group" class="field">
+        <%= f.label :lon, "Center lon" %>
+        <%= f.number_field :lon, step: "any", value: @lon, class: "input" %>
       </div>
-      <div class="col-md-3">
-        <%= f.label :meters, "Radius (m)", class: "form-label" %>
-        <%= f.number_field :meters, step: "any", value: @meters, class: "form-control" %>
+      <div role="group" class="field">
+        <%= f.label :meters, "Radius (m)" %>
+        <%= f.number_field :meters, step: "any", value: @meters, class: "input" %>
       </div>
-      <div class="col-md-3 d-flex align-items-end">
-        <%= f.submit "Search", class: "btn btn-primary w-100" %>
+      <div class="flex items-end">
+        <%= f.submit "Search", class: "btn w-full" %>
       </div>
     <% end %>
-  </div>
+  </section>
 
   <% if @hits.any? %>
-    <div class="card-body border-top">
-      <h3 class="card-title"><%= pluralize(@hits.size, "hit") %></h3>
-    </div>
-    <div class="table-responsive">
-      <table class="table table-vcenter card-table">
+    <section class="border-t">
+      <h2 class="font-semibold"><%= pluralize(@hits.size, "hit") %></h2>
+    </section>
+    <div class="table-container border-t">
+      <table class="table">
         <thead><tr><th>Name</th><th>Lat</th><th>Lon</th><th>Distance</th></tr></thead>
         <tbody>
         <% @hits.each do |h| %>
@@ -35,7 +37,7 @@
             <td><code><%= h.lat %></code></td>
             <td><code><%= h.lon %></code></td>
             <td>
-              <span class="badge bg-azure-lt">
+              <span class="badge" data-variant="outline">
                 <%= number_to_human((h.distance_m / 1000.0), units: { unit: "km" }, precision: 3) %>
               </span>
             </td>
@@ -45,6 +47,6 @@
       </table>
     </div>
   <% else %>
-    <div class="card-body text-center text-secondary py-4">No matches in that radius.</div>
+    <section class="border-t py-8 text-center text-muted-foreground">No matches in that radius.</section>
   <% end %>
 </div>

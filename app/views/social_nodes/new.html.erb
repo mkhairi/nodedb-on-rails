@@ -1,28 +1,33 @@
-<div class="page-header"><h2 class="page-title">Add node</h2></div>
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Add node</h1>
+</div>
 
-<div class="card mt-3">
-  <div class="card-body">
-    <%= form_with model: @node, url: social_nodes_path, local: true do |f| %>
+<div class="card mt-4">
+  <section>
+    <%= form_with model: @node, url: social_nodes_path, local: true, html: { class: "space-y-6" } do |f| %>
       <% if @node.errors.any? %>
-        <div class="alert alert-danger">
-          <h4 class="alert-title"><%= pluralize(@node.errors.count, "error") %></h4>
-          <ul class="mb-0">
-            <% @node.errors.full_messages.each { |m| %><li><%= m %></li><% } %>
-          </ul>
+        <div class="alert" role="alert" data-variant="destructive">
+          <i class="ti ti-alert-circle"></i>
+          <h2><%= pluralize(@node.errors.count, "error") %></h2>
+          <section>
+            <ul class="list-disc pl-4">
+              <% @node.errors.full_messages.each { |m| %><li><%= m %></li><% } %>
+            </ul>
+          </section>
         </div>
       <% end %>
-      <div class="mb-3">
-        <%= f.label :id, "ID (slug)", class: "form-label required" %>
-        <%= f.text_field :id, placeholder: "alice", class: "form-control" %>
+      <div role="group" class="field">
+        <%= f.label :id, "ID (slug)" %>
+        <%= f.text_field :id, placeholder: "alice", class: "input" %>
       </div>
-      <div class="mb-3">
-        <%= f.label :name, "Display name", class: "form-label" %>
-        <%= f.text_field :name, class: "form-control" %>
+      <div role="group" class="field">
+        <%= f.label :name, "Display name" %>
+        <%= f.text_field :name, class: "input" %>
       </div>
-      <div class="btn-list">
-        <%= f.submit "Save", class: "btn btn-primary" %>
-        <%= link_to "Cancel", social_nodes_path, class: "btn" %>
+      <div class="flex flex-wrap gap-2">
+        <%= f.submit "Save", class: "btn" %>
+        <%= link_to "Cancel", social_nodes_path, class: "btn", data: { variant: "outline" } %>
       </div>
     <% end %>
-  </div>
+  </section>
 </div>

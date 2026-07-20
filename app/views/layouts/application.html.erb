@@ -6,36 +6,77 @@
     <title>NodeDB On Rails</title>
     <%= csrf_meta_tags %>
     <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css"
-          integrity="sha384-kz+I4+mczbNiZfLAJMxOlJaZmnbRYhARHNkR2k6tal4gz7OL33/0puDD3SvkiNX9"
+          href="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/basecoat.cdn.min.css"
+          integrity="sha384-XWKdrxzE2X33lI8Q03C9fIbqdLWV11whVNycR2/3bMNJY73EEQOa7rmN+SeiSCor"
           crossorigin="anonymous" />
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css"
           integrity="sha384-0qlw5FfXiK9KETSJ39fi9FNuVP+qL9XLrBRZzKDD9J0YGvIoZ/r9I/EmZDcoYwEq"
           crossorigin="anonymous" />
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js"
-            integrity="sha384-pku3birjgGovaJ9ngF7SaxKkF/eYUvBjiMJ+jTtWbNesIj2Rud2K63+4JD7EF4gk"
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"
+            integrity="sha384-XXN6/S6yXj8EpXnBTw3JGR9ZM+hixGxFCLYn0FHtg9cWh0ziKmAgTPEhecbCDOmj"
             crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/js/all.min.js"
+            integrity="sha384-rD2ZCuReXV7nIneJcn1lsTn6yOv87YARLQyUsemVAxrYYHdy5hcAW8XZEQxx87Dj"
+            crossorigin="anonymous" defer></script>
+    <style>
+      /* Basecoat keys alert icon layout on a direct <svg> child; mirror
+         those rules for the Tabler icon font we use instead. */
+      .alert:has(> i.ti) {
+        column-gap: calc(var(--spacing) * 2.5);
+        grid-template-columns: auto 1fr;
+      }
+      .alert > i.ti {
+        grid-row: span 2 / span 2;
+        translate: 0 calc(var(--spacing) * 0.5);
+        font-size: 1rem;
+        line-height: 1;
+      }
+      .alert:has(> i.ti) > :is(h2, h3, h4, h5, h6, strong) {
+        grid-column-start: 2;
+      }
+
+      /* Basecoat ships no pre/code styling and Tailwind preflight strips
+         the browser defaults; unlayered rules here win over its base layer. */
+      pre {
+        background: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) - 2px);
+        padding: calc(var(--spacing) * 3);
+        overflow-x: auto;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+      }
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.8125em;
+      }
+      :not(pre) > code {
+        background: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) - 4px);
+        padding: calc(var(--spacing) * 0.5) calc(var(--spacing) * 1.5);
+        white-space: nowrap;
+      }
+      pre code {
+        font-size: inherit;
+      }
+    </style>
   </head>
   <body>
-    <div class="page">
-      <aside class="navbar navbar-vertical navbar-expand-lg navbar-transparent">
-        <div class="container-fluid">
-          <button class="navbar-toggler" type="button"
-                  data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
-                  aria-controls="sidebar-menu" aria-expanded="false"
-                  aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <h1 class="navbar-brand navbar-brand-autodark">
-            <%= link_to root_path, class: "d-flex align-items-center text-reset text-decoration-none" do %>
-              <i class="ti ti-database me-2 text-primary"></i>
-              <span>NodeDB On Rails</span>
-            <% end %>
-          </h1>
-          <span class="ribbon ribbon-start bg-yellow-lt mt-5">alpha</span>
-          <div class="collapse navbar-collapse mt-5" id="sidebar-menu">
-            <ul class="navbar-nav pt-lg-3">
+    <aside id="sidebar" class="sidebar" data-side="left">
+      <nav aria-label="Sidebar navigation">
+        <header>
+          <%= link_to root_path, class: "flex items-center gap-2 px-2 py-1 font-semibold" do %>
+            <i class="ti ti-database text-primary"></i>
+            <span>NodeDB On Rails</span>
+            <span class="badge" data-variant="outline">alpha</span>
+          <% end %>
+        </header>
+        <section class="scrollbar-sm">
+          <div role="group" aria-labelledby="group-label-engines">
+            <h3 id="group-label-engines">Engines</h3>
+            <ul>
               <% [
                 ["articles",  articles_path,      "ti-files",            "Articles"],
                 ["posts",     posts_path,         "ti-search",           "Posts (FTS)"],
@@ -50,85 +91,81 @@
                 ["info",      server_info_path,   "ti-server",           "Server info"]
               ].each do |slug, path, icon, label| %>
                 <% active = current_page?(path) || (slug == "social" && controller_name == "social_nodes") %>
-                <li class="nav-item <%= 'active' if active %>">
-                  <%= link_to path, class: "nav-link" do %>
-                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                      <i class="ti <%= icon %>"></i>
-                    </span>
-                    <span class="nav-link-title"><%= label %></span>
+                <li>
+                  <%= link_to path, "aria-current": (active ? "page" : nil) do %>
+                    <i class="ti <%= icon %>"></i>
+                    <span><%= label %></span>
                   <% end %>
                 </li>
               <% end %>
             </ul>
-
-            <ul class="navbar-nav mt-auto pt-3 border-top">
-              <li class="nav-item <%= 'active' if current_page?(docs_path) %>">
-                <%= link_to docs_path, class: "nav-link" do %>
-                  <span class="nav-link-icon d-md-none d-lg-inline-block">
-                    <i class="ti ti-book"></i>
-                  </span>
-                  <span class="nav-link-title">Docs</span>
+          </div>
+          <div role="group" aria-labelledby="group-label-help">
+            <h3 id="group-label-help">Help</h3>
+            <ul>
+              <li>
+                <%= link_to docs_path, "aria-current": (current_page?(docs_path) ? "page" : nil) do %>
+                  <i class="ti ti-book"></i>
+                  <span>Docs</span>
                 <% end %>
               </li>
             </ul>
           </div>
-        </div>
-      </aside>
+        </section>
+      </nav>
+    </aside>
 
-      <div class="page-wrapper">
-        <div class="page-body">
-          <div class="container-xl">
-            <% flash.each do |key, msg| %>
-              <% color = { "notice" => "success", "alert" => "warning" }[key.to_s] || "info" %>
-              <div class="alert alert-<%= color %> alert-dismissible" role="alert">
-                <div class="d-flex">
-                  <div><i class="ti <%= color == 'success' ? 'ti-check' : 'ti-alert-circle' %> me-2"></i></div>
-                  <div><%= msg %></div>
-                </div>
-                <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
-              </div>
-            <% end %>
-            <%= yield %>
-          </div>
-        </div>
+    <main class="min-h-dvh flex flex-col">
+      <header class="flex items-center gap-2 border-b px-4 py-2 md:hidden">
+        <button type="button" class="btn" data-variant="ghost" data-size="icon"
+                aria-label="Toggle sidebar"
+                onclick="document.getElementById('sidebar')?.toggle()">
+          <i class="ti ti-menu-2"></i>
+        </button>
+        <span class="font-semibold">NodeDB On Rails</span>
+      </header>
 
-        <footer class="footer footer-transparent d-print-none">
-          <div class="container-xl">
-            <div class="row text-center align-items-center flex-row-reverse">
-              <div class="col-12 col-lg-auto mt-3 mt-lg-0">
-                <ul class="list-inline list-inline-dots mb-0">
-                  <li class="list-inline-item">
-                    <a href="https://github.com/mkhairi/activerecord-nodedb-adapter"
-                       class="link-secondary">activerecord-nodedb-adapter</a>
-                  </li>
-                  <li class="list-inline-item">
-                    <a href="https://github.com/mkhairi/nodedb-ruby"
-                       class="link-secondary">nodedb-ruby</a>
-                  </li>
-                  <li class="list-inline-item">
-                    <a href="https://github.com/mkhairi/nodedb-on-rails"
-                       class="link-secondary">nodedb-on-rails</a>
-                  </li>
-                  <li class="list-inline-item">
-                    <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues?q=%22%5Bupstream%3ANodeDB%5D%22"
-                       class="link-secondary">bug tracker</a>
-                  </li>
-                  <li class="list-inline-item">
-                    <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md"
-                       class="link-secondary">known issues</a>
-                  </li>
-                </ul>
-              </div>
-              <div class="col-lg-auto ms-lg-auto mt-3 mt-lg-0">
-                <ul class="list-inline list-inline-dots mb-0 text-secondary">
-                  <li class="list-inline-item">Rails <%= Rails.version %></li>
-                  <li class="list-inline-item">Ruby <%= RUBY_VERSION %></li>
-                </ul>
-              </div>
-            </div>
+      <div class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 lg:px-8">
+        <% flash.each do |key, msg| %>
+          <% destructive = key.to_s == "alert" %>
+          <div class="alert mb-4" <%= 'data-variant="destructive"'.html_safe if destructive %> role="alert">
+            <i class="ti <%= destructive ? 'ti-alert-circle' : 'ti-check' %>"></i>
+            <h2><%= msg %></h2>
           </div>
-        </footer>
+        <% end %>
+        <%= yield %>
       </div>
-    </div>
+
+      <footer class="border-t px-4 py-4 lg:px-8">
+        <div class="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 text-sm text-muted-foreground lg:flex-row">
+          <ul class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <li>
+              <a href="https://github.com/mkhairi/activerecord-nodedb-adapter"
+                 class="hover:underline">activerecord-nodedb-adapter</a>
+            </li>
+            <li>
+              <a href="https://github.com/mkhairi/nodedb-ruby"
+                 class="hover:underline">nodedb-ruby</a>
+            </li>
+            <li>
+              <a href="https://github.com/mkhairi/nodedb-on-rails"
+                 class="hover:underline">nodedb-on-rails</a>
+            </li>
+            <li>
+              <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/issues?q=%22%5Bupstream%3ANodeDB%5D%22"
+                 class="hover:underline">bug tracker</a>
+            </li>
+            <li>
+              <a href="https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md"
+                 class="hover:underline">known issues</a>
+            </li>
+          </ul>
+          <ul class="flex items-center gap-4">
+            <li>Rails <%= Rails.version %></li>
+            <li>Ruby <%= RUBY_VERSION %></li>
+          </ul>
+        </div>
+      </footer>
+    </main>
   </body>
 </html>

@@ -1,43 +1,50 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Vector search</h2>
-      <div class="text-secondary">NodeDB vector engine · <code>embeddings</code> · dim 3 · cosine</div>
-    </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Vector search</h1>
+    <div class="text-muted-foreground">NodeDB vector engine · <code>embeddings</code> · dim 3 · cosine</div>
   </div>
 </div>
 
 <% if @error %>
-  <div class="alert alert-warning mt-3"><%= @error %></div>
+  <div class="alert mt-4" role="alert">
+    <i class="ti ti-alert-circle"></i>
+    <h2><%= @error %></h2>
+  </div>
 <% end %>
 
-<div class="alert alert-info mt-3 mb-0 small">
-  NodeDB <code>SEARCH … USING VECTOR()</code> projects
-  <code>id</code> / <code>_surrogate</code> / <code>distance</code>
-  result columns (no document fields), so the catalog below is the
-  fixed seed set. Works identically over pgwire and native.
+<div class="alert mt-4 mb-0" role="alert">
+  <i class="ti ti-info-circle"></i>
+  <h2>Fixed seed catalog</h2>
+  <section>
+    <p>
+      NodeDB <code>SEARCH … USING VECTOR()</code> projects
+      <code>id</code> / <code>_surrogate</code> / <code>distance</code>
+      result columns (no document fields), so the catalog below is the
+      fixed seed set. Works identically over pgwire and native.
+    </p>
+  </section>
 </div>
 
-<div class="row mt-3 g-3">
-  <div class="col-lg-6">
-    <div class="card h-100">
-      <div class="card-header"><h3 class="card-title">Nearest-neighbour search</h3></div>
-      <div class="card-body">
-        <%= form_with url: search_embeddings_path, method: :get, local: true, class: "row g-2" do |f| %>
-          <div class="col">
-            <%= f.text_field :q, value: params[:q], class: "form-control", placeholder: "query vector e.g. 0.1, 0.2, 0.3" %>
+<div class="grid gap-4 mt-4 lg:grid-cols-2">
+  <div>
+    <div class="card h-full">
+      <header><h2>Nearest-neighbour search</h2></header>
+      <section>
+        <%= form_with url: search_embeddings_path, method: :get, local: true, class: "flex gap-2" do |f| %>
+          <div class="flex-1">
+            <%= f.text_field :q, value: params[:q], class: "input", placeholder: "query vector e.g. 0.1, 0.2, 0.3" %>
           </div>
-          <div class="col-auto"><%= f.submit "Search", class: "btn btn-primary" %></div>
+          <div><%= f.submit "Search", class: "btn" %></div>
         <% end %>
 
         <% if @results.any? %>
-          <div class="table-responsive mt-3">
-            <table class="table table-vcenter">
+          <div class="table-container mt-4">
+            <table class="table">
               <thead><tr><th>#</th><th>Surrogate</th><th>Title</th><th class="text-end">Distance</th></tr></thead>
               <tbody>
                 <% @results.each_with_index do |r, i| %>
                   <tr>
-                    <td class="text-secondary"><%= i + 1 %></td>
+                    <td class="text-muted-foreground"><%= i + 1 %></td>
                     <td><code><%= r["surrogate"] %></code></td>
                     <td><%= r["title"] || "(ad-hoc)" %></td>
                     <td class="text-end"><code><%= r["distance"].round(4) rescue r["distance"] %></code></td>
@@ -47,50 +54,52 @@
             </table>
           </div>
         <% elsif params[:q].present? %>
-          <p class="text-secondary mb-0 mt-3">No neighbours returned.</p>
+          <p class="text-muted-foreground mb-0 mt-4">No neighbours returned.</p>
         <% end %>
-      </div>
+      </section>
     </div>
 
-    <div class="card mt-3">
-      <div class="card-header"><h3 class="card-title">Add embedding</h3></div>
-      <div class="card-body">
-        <%= form_with url: embeddings_path, method: :post, local: true, class: "row g-2" do |f| %>
-          <div class="col-5">
-            <%= f.text_field :title, class: "form-control", placeholder: "title" %>
+    <div class="card mt-4">
+      <header><h2>Add embedding</h2></header>
+      <section>
+        <%= form_with url: embeddings_path, method: :post, local: true, class: "grid grid-cols-12 gap-2" do |f| %>
+          <div class="col-span-5">
+            <%= f.text_field :title, class: "input", placeholder: "title" %>
           </div>
-          <div class="col-4">
-            <%= f.text_field :embedding, class: "form-control", placeholder: "0.1, 0.2, 0.3" %>
+          <div class="col-span-4">
+            <%= f.text_field :embedding, class: "input", placeholder: "0.1, 0.2, 0.3" %>
           </div>
-          <div class="col-3">
-            <%= f.submit "Add", class: "btn btn-primary w-100" %>
+          <div class="col-span-3">
+            <%= f.submit "Add", class: "btn w-full" %>
           </div>
         <% end %>
-        <p class="text-secondary small mt-2 mb-0">Added vectors are searchable but not listed in the seed catalog.</p>
-      </div>
+        <p class="text-muted-foreground text-sm mt-2 mb-0">Added vectors are searchable but not listed in the seed catalog.</p>
+      </section>
     </div>
   </div>
 
-  <div class="col-lg-6">
-    <div class="card h-100">
-      <div class="card-header"><h3 class="card-title">Seed catalog</h3></div>
-      <div class="table-responsive">
-        <table class="table table-vcenter card-table">
-          <thead><tr><th class="w-1">#</th><th>Title</th><th>Vector</th></tr></thead>
-          <tbody>
-            <% @catalog.each_with_index do |s, i| %>
-              <tr>
-                <td class="text-secondary"><%= i %></td>
-                <td><%= s[:title] %></td>
-                <td><code>[<%= s[:vec].join(", ") %>]</code></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-      <div class="card-footer text-secondary small">
+  <div>
+    <div class="card h-full">
+      <header><h2>Seed catalog</h2></header>
+      <section>
+        <div class="table-container">
+          <table class="table">
+            <thead><tr><th>#</th><th>Title</th><th>Vector</th></tr></thead>
+            <tbody>
+              <% @catalog.each_with_index do |s, i| %>
+                <tr>
+                  <td class="text-muted-foreground"><%= i %></td>
+                  <td><%= s[:title] %></td>
+                  <td><code>[<%= s[:vec].join(", ") %>]</code></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <footer class="text-muted-foreground text-sm">
         Surrogate <code>#</code> in results maps to this row index.
-      </div>
+      </footer>
     </div>
   </div>
 </div>
