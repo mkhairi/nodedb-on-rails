@@ -6,7 +6,9 @@ require "test_helper"
 #
 # The same expectations as the rake-driven smoke script:
 #   pgwire — all engines pass
-#   native — KV + vector still gated by BUG-018 (skipped per test)
+#   native — document CRUD fails on BUG-048 (transactional INSERTs
+#   invisible to PK point lookups); the old BUG-018 KV/vector skips
+#   are gone (fixed upstream)
 class EnginesSmokeTest < ActionDispatch::IntegrationTest
   setup { skip_if_daemon_down! }
 

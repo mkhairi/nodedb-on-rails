@@ -1,9 +1,10 @@
 # NodeDB BITEMPORAL collection demo.
 #
 # Reads project real columns on current upstream (plain SELECT,
-# count(*), AS OF SYSTEM TIME). Writes must be autocommit: INSERTs
-# committed inside explicit transactions are lost on bitemporal
-# collections (upstream BUG-024) — see AuditLog.record!.
+# count(*), AS OF SYSTEM TIME). AuditLog.record! writes autocommit —
+# historically required (transactional INSERTs were lost on bitemporal
+# collections, upstream BUG-024, since fixed) and kept because it
+# works on every build.
 class CreateAuditLogs < ActiveRecord::Migration[8.0]
   def up
     create_collection :audit_logs, engine: :document_strict, bitemporal: true do |t|

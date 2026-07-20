@@ -240,8 +240,8 @@ class FeatureSmoke
   # Multi-tenancy: CREATE TENANT + tenant-bound user; the tenant
   # session (fresh pgwire connection as that user) must be isolated
   # from the default tenant's collections. A fixed tenant is reused
-  # across runs — provision-only, no retire (dropping users bricks the
-  # daemon's boot integrity check, BUG-035).
+  # across runs — provision-only, no retire (tenants become
+  # undroppable once their built-in admin inherits ownership, BUG-051).
   def section_tenants
     puts
     puts "=== Tenants ==="
