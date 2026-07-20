@@ -16,6 +16,7 @@
   <i class="ti ti-info-circle"></i>
   <h2>How this demo works.</h2>
   <section>
+    <p>
     There is no <code>SET TENANT</code> — tenancy binds per <em>user</em>, per
     <em>connection</em>. Provisioning runs
     <code>CREATE TENANT</code> + <code>CREATE USER t_&lt;name&gt; … TENANT &lt;name&gt;</code>
@@ -29,6 +30,7 @@
     button — <code>DROP USER</code> currently leaves dangling catalog owner
     references that fail the daemon's boot integrity check on restart
     (upstream BUG-035), so tenants stay once created.
+    </p>
   </section>
 </div>
 

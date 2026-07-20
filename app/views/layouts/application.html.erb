@@ -19,6 +19,49 @@
     <script src="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/js/all.min.js"
             integrity="sha384-rD2ZCuReXV7nIneJcn1lsTn6yOv87YARLQyUsemVAxrYYHdy5hcAW8XZEQxx87Dj"
             crossorigin="anonymous" defer></script>
+    <style>
+      /* Basecoat keys alert icon layout on a direct <svg> child; mirror
+         those rules for the Tabler icon font we use instead. */
+      .alert:has(> i.ti) {
+        column-gap: calc(var(--spacing) * 2.5);
+        grid-template-columns: auto 1fr;
+      }
+      .alert > i.ti {
+        grid-row: span 2 / span 2;
+        translate: 0 calc(var(--spacing) * 0.5);
+        font-size: 1rem;
+        line-height: 1;
+      }
+      .alert:has(> i.ti) > :is(h2, h3, h4, h5, h6, strong) {
+        grid-column-start: 2;
+      }
+
+      /* Basecoat ships no pre/code styling and Tailwind preflight strips
+         the browser defaults; unlayered rules here win over its base layer. */
+      pre {
+        background: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) - 2px);
+        padding: calc(var(--spacing) * 3);
+        overflow-x: auto;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+      }
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.8125em;
+      }
+      :not(pre) > code {
+        background: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) - 4px);
+        padding: calc(var(--spacing) * 0.5) calc(var(--spacing) * 1.5);
+        white-space: nowrap;
+      }
+      pre code {
+        font-size: inherit;
+      }
+    </style>
   </head>
   <body>
     <aside id="sidebar" class="sidebar" data-side="left">
