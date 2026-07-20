@@ -1,50 +1,53 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Graph + PageRank</h2>
-    </div>
-    <div class="col-auto">
-      <%= link_to social_nodes_path, class: "btn" do %><i class="ti ti-arrow-left me-1"></i> Back<% end %>
-    </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Graph + PageRank</h1>
+  </div>
+  <div>
+    <%= link_to social_nodes_path, class: "btn", data: { variant: "outline" } do %><i class="ti ti-arrow-left mr-1"></i> Back<% end %>
   </div>
 </div>
 
 <% if @error %>
-  <div class="alert alert-danger mt-3"><i class="ti ti-alert-circle me-1"></i> <%= @error %></div>
+  <div class="alert mt-4" role="alert" data-variant="destructive">
+    <i class="ti ti-alert-circle"></i>
+    <h2><%= @error %></h2>
+  </div>
 <% end %>
 
 <% if @stats %>
-  <div class="card mt-3">
-    <div class="card-header">
-      <h3 class="card-title">Graph stats <span class="badge bg-azure-lt ms-2">NodeDB v0.3.0</span></h3>
-      <div class="text-secondary small ms-auto">SHOW GRAPH STATS — persistent O(1) edge-store counters</div>
-    </div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <div class="text-secondary">Nodes</div>
-          <div class="h2 mb-0"><%= @stats["node_count"] %></div>
+  <div class="card mt-4">
+    <header>
+      <h2>Graph stats <span class="badge ml-2" data-variant="outline">NodeDB v0.3.0</span></h2>
+      <div class="card-action text-sm text-muted-foreground">SHOW GRAPH STATS — persistent O(1) edge-store counters</div>
+    </header>
+    <section>
+      <div class="grid gap-4 md:grid-cols-4">
+        <div>
+          <div class="text-muted-foreground">Nodes</div>
+          <div class="text-3xl font-semibold"><%= @stats["node_count"] %></div>
         </div>
-        <div class="col-md-3">
-          <div class="text-secondary">Edges</div>
-          <div class="h2 mb-0"><%= @stats["edge_count"] %></div>
+        <div>
+          <div class="text-muted-foreground">Edges</div>
+          <div class="text-3xl font-semibold"><%= @stats["edge_count"] %></div>
         </div>
-        <div class="col-md-3">
-          <div class="text-secondary">Distinct labels</div>
-          <div class="h2 mb-0"><%= @stats["distinct_label_count"] %></div>
+        <div>
+          <div class="text-muted-foreground">Distinct labels</div>
+          <div class="text-3xl font-semibold"><%= @stats["distinct_label_count"] %></div>
         </div>
-        <div class="col-md-3">
-          <div class="text-secondary">Label breakdown</div>
+        <div>
+          <div class="text-muted-foreground">Label breakdown</div>
           <% if @stats_labels.any? %>
-            <% @stats_labels.each do |entry| %>
-              <span class="badge bg-blue-lt me-1"><%= entry["label"] %> · <%= entry["count"] %></span>
-            <% end %>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <% @stats_labels.each do |entry| %>
+                <span class="badge" data-variant="secondary"><%= entry["label"] %> · <%= entry["count"] %></span>
+              <% end %>
+            </div>
           <% else %>
-            <span class="text-secondary">—</span>
+            <span class="text-muted-foreground">—</span>
           <% end %>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 <% end %>
 
@@ -52,9 +55,9 @@
 <% max = sorted.map { |n| @pagerank[n.id] || 0.0 }.max || 1.0 %>
 <% max = 1.0 if max.zero? %>
 
-<div class="card mt-3">
-  <div class="table-responsive">
-    <table class="table table-vcenter card-table">
+<div class="card mt-4">
+  <div class="table-container">
+    <table class="table">
       <thead><tr><th>Node</th><th>Name</th><th>Score</th><th>Bar</th></tr></thead>
       <tbody>
       <% sorted.each do |n| %>
@@ -62,10 +65,10 @@
         <tr>
           <td><code><%= n.id %></code></td>
           <td><%= n.name %></td>
-          <td><span class="badge bg-blue-lt"><%= score.round(5) %></span></td>
+          <td><span class="badge" data-variant="secondary"><%= score.round(5) %></span></td>
           <td style="width: 30%;">
-            <div class="progress progress-sm">
-              <div class="progress-bar bg-azure" style="width: <%= ((score / max) * 100).round %>%"></div>
+            <div class="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div class="h-full rounded-full bg-primary" style="width: <%= ((score / max) * 100).round %>%"></div>
             </div>
           </td>
         </tr>

@@ -1,65 +1,65 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">File store</h2>
-      <div class="text-secondary">
-        <%= pluralize(@files.size, "file") %> — payloads on the <code>kv</code> engine
-        (Base64), metadata on <code>document_strict</code>
-      </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">File store</h1>
+    <div class="text-muted-foreground">
+      <%= pluralize(@files.size, "file") %> — payloads on the <code>kv</code> engine
+      (Base64), metadata on <code>document_strict</code>
     </div>
   </div>
 </div>
 
-<div class="row mt-3 g-3">
-  <div class="col-md-5">
+<div class="grid gap-4 mt-4 md:grid-cols-12">
+  <div class="md:col-span-5">
     <div class="card">
-      <div class="card-header"><h3 class="card-title">Upload</h3></div>
-      <div class="card-body">
+      <header><h2>Upload</h2></header>
+      <section>
         <%= form_with url: stored_files_path, method: :post, local: true, multipart: true do |f| %>
-          <div class="mb-3">
-            <%= f.file_field :file, class: "form-control" %>
-            <div class="form-hint">
+          <div role="group" class="field mb-4">
+            <%= f.file_field :file, class: "input" %>
+            <p>
               Max <%= number_to_human_size(StoredFile::MAX_BYTES) %> —
               stored as a single kv value; NodeDB's WAL caps writes at ~2&nbsp;MB.
-            </div>
+            </p>
           </div>
-          <%= f.submit "Upload", class: "btn btn-primary" %>
+          <%= f.submit "Upload", class: "btn" %>
         <% end %>
-      </div>
+      </section>
     </div>
   </div>
 
-  <div class="col-md-7">
+  <div class="md:col-span-7">
     <div class="card">
-      <div class="card-header"><h3 class="card-title">Stored files</h3></div>
-      <div class="table-responsive">
-        <table class="table table-vcenter card-table">
-          <thead>
-            <tr>
-              <th>Filename</th><th>Type</th><th>Size</th><th>Uploaded</th>
-              <th class="w-1"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if @files.empty? %>
-              <tr><td colspan="5" class="text-secondary">No files yet.</td></tr>
-            <% end %>
-            <% @files.each do |file| %>
+      <header><h2>Stored files</h2></header>
+      <section>
+        <div class="table-container">
+          <table class="table">
+            <thead>
               <tr>
-                <td><%= link_to file.filename, stored_file_path(file), title: "Download" %></td>
-                <td><code><%= file.content_type %></code></td>
-                <td><%= number_to_human_size(file.byte_size.to_i) %></td>
-                <td class="text-secondary"><%= file.uploaded_at %></td>
-                <td>
-                  <%= button_to "Delete", stored_file_path(file), method: :delete,
-                        class: "btn btn-sm btn-ghost-danger",
-                        form: { data: { turbo_confirm: "Delete #{file.filename}?" } } %>
-                </td>
+                <th>Filename</th><th>Type</th><th>Size</th><th>Uploaded</th>
+                <th></th>
               </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              <% if @files.empty? %>
+                <tr><td colspan="5" class="text-muted-foreground">No files yet.</td></tr>
+              <% end %>
+              <% @files.each do |file| %>
+                <tr>
+                  <td><%= link_to file.filename, stored_file_path(file), title: "Download" %></td>
+                  <td><code><%= file.content_type %></code></td>
+                  <td><%= number_to_human_size(file.byte_size.to_i) %></td>
+                  <td class="text-muted-foreground"><%= file.uploaded_at %></td>
+                  <td class="text-end">
+                    <%= button_to "Delete", stored_file_path(file), method: :delete,
+                          class: "btn text-destructive", "data-variant": "ghost", "data-size": "sm",
+                          form: { data: { turbo_confirm: "Delete #{file.filename}?" } } %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </div>
 </div>

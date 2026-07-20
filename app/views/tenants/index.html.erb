@@ -1,23 +1,21 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">
-        Tenants
-        <span class="badge bg-azure-lt ms-2">MULTI-TENANCY</span>
-      </h2>
-      <div class="text-secondary">
-        NodeDB server-side isolation: users are bound to a tenant at
-        <code>CREATE USER … TENANT &lt;name&gt;</code>, and every connection
-        authenticated as that user sees only the tenant's own collections.
-      </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">
+      Tenants
+      <span class="badge text-sky-600 ml-2" data-variant="outline">MULTI-TENANCY</span>
+    </h1>
+    <div class="text-muted-foreground">
+      NodeDB server-side isolation: users are bound to a tenant at
+      <code>CREATE USER … TENANT &lt;name&gt;</code>, and every connection
+      authenticated as that user sees only the tenant's own collections.
     </div>
   </div>
 </div>
 
-<div class="alert alert-info d-flex align-items-start mt-3">
-  <i class="ti ti-info-circle me-2 mt-1"></i>
-  <div>
-    <strong>How this demo works.</strong>
+<div class="alert mt-4" role="alert">
+  <i class="ti ti-info-circle"></i>
+  <h2>How this demo works.</h2>
+  <section>
     There is no <code>SET TENANT</code> — tenancy binds per <em>user</em>, per
     <em>connection</em>. Provisioning runs
     <code>CREATE TENANT</code> + <code>CREATE USER t_&lt;name&gt; … TENANT &lt;name&gt;</code>
@@ -31,60 +29,62 @@
     button — <code>DROP USER</code> currently leaves dangling catalog owner
     references that fail the daemon's boot integrity check on restart
     (upstream BUG-035), so tenants stay once created.
-  </div>
+  </section>
 </div>
 
-<%= form_with url: tenants_path, method: :post, local: true, class: "card mt-3" do |f| %>
-  <div class="card-body">
-    <div class="row g-2 align-items-end">
-      <div class="col-md-6">
-        <%= f.label :name, "Tenant name", class: "form-label" %>
-        <%= f.text_field :name, class: "form-control", placeholder: "acme_corp",
+<%= form_with url: tenants_path, method: :post, local: true, class: "card mt-4" do |f| %>
+  <section>
+    <div class="grid gap-4 items-end md:grid-cols-4">
+      <div role="group" class="field md:col-span-2">
+        <%= f.label :name, "Tenant name" %>
+        <%= f.text_field :name, class: "input", placeholder: "acme_corp",
               pattern: "[a-z][a-z0-9_]{2,29}" %>
-        <div class="form-hint">3–30 chars: lowercase letter first, then a–z 0–9 _</div>
+        <p>3–30 chars: lowercase letter first, then a–z 0–9 _</p>
       </div>
-      <div class="col-md-3">
-        <%= f.submit "Provision tenant", class: "btn btn-primary" %>
+      <div>
+        <%= f.submit "Provision tenant", class: "btn" %>
       </div>
     </div>
-  </div>
+  </section>
 <% end %>
 
-<div class="card mt-3">
-  <div class="card-header">
-    <h3 class="card-title">Provisioned tenants</h3>
-    <div class="text-secondary small ms-auto"><%= @tenants.size %> tenants · counters via <code>SHOW TENANTS</code></div>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-vcenter card-table">
-      <thead>
-        <tr>
-          <th>Tenant</th>
-          <th>Bound user</th>
-          <th>Created</th>
-          <th class="text-end">Total requests</th>
-          <th class="text-end">Rejected</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @tenants.each do |t| %>
-          <% c = @counters[t.id] %>
+<div class="card mt-4">
+  <header>
+    <h2>Provisioned tenants</h2>
+    <div class="card-action text-muted-foreground text-sm"><%= @tenants.size %> tenants · counters via <code>SHOW TENANTS</code></div>
+  </header>
+  <section>
+    <div class="table-container">
+      <table class="table">
+        <thead>
           <tr>
-            <td><%= link_to t.id, tenant_path(t), class: "fw-bold" %></td>
-            <td><code><%= t.username %></code></td>
-            <td class="text-secondary small"><%= t.created_at %></td>
-            <td class="text-end"><code><%= c ? c["total_requests"] : "?" %></code></td>
-            <td class="text-end"><code><%= c ? c["rejected_requests"] : "?" %></code></td>
+            <th>Tenant</th>
+            <th>Bound user</th>
+            <th>Created</th>
+            <th class="text-end">Total requests</th>
+            <th class="text-end">Rejected</th>
           </tr>
-        <% end %>
-        <% if @tenants.empty? %>
-          <tr>
-            <td colspan="5" class="text-secondary text-center">
-              No tenants yet — provision one above.
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          <% @tenants.each do |t| %>
+            <% c = @counters[t.id] %>
+            <tr>
+              <td><%= link_to t.id, tenant_path(t), class: "font-semibold" %></td>
+              <td><code><%= t.username %></code></td>
+              <td class="text-muted-foreground text-sm"><%= t.created_at %></td>
+              <td class="text-end"><code><%= c ? c["total_requests"] : "?" %></code></td>
+              <td class="text-end"><code><%= c ? c["rejected_requests"] : "?" %></code></td>
+            </tr>
+          <% end %>
+          <% if @tenants.empty? %>
+            <tr>
+              <td colspan="5" class="text-muted-foreground text-center">
+                No tenants yet — provision one above.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>

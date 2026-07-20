@@ -1,19 +1,17 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title"><%= @location.name %></h2>
-      <div class="text-secondary small"><code><%= @location.id %></code> · <%= @location.lat %>, <%= @location.lon %></div>
-    </div>
-    <div class="col-auto btn-list">
-      <%= link_to locations_path, class: "btn" do %><i class="ti ti-arrow-left me-1"></i> All<% end %>
-      <%= button_to location_path(@location.id), method: :delete, data: { turbo_confirm: "Sure?" }, class: "btn btn-ghost-danger" do %>
-        <i class="ti ti-trash me-1"></i> Delete
-      <% end %>
-    </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight"><%= @location.name %></h1>
+    <p class="text-sm text-muted-foreground"><code><%= @location.id %></code> · <%= @location.lat %>, <%= @location.lon %></p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <%= link_to locations_path, class: "btn", data: { variant: "outline" } do %><i class="ti ti-arrow-left mr-1"></i> All<% end %>
+    <%= button_to location_path(@location.id), method: :delete, data: { turbo_confirm: "Sure?", variant: "ghost" }, class: "btn text-destructive" do %>
+      <i class="ti ti-trash mr-1"></i> Delete
+    <% end %>
   </div>
 </div>
 
-<div class="card mt-3">
+<div class="card mt-4 overflow-hidden">
   <div id="map" style="height: 420px;"></div>
 </div>
 

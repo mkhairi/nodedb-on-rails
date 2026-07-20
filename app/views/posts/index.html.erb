@@ -1,71 +1,69 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Posts</h2>
-      <div class="text-secondary"><%= pluralize(@posts.size, "post") %> · powered by NodeDB FTS</div>
-    </div>
-    <div class="col-auto">
-      <%= link_to new_post_path, class: "btn btn-primary" do %>
-        <i class="ti ti-plus me-1"></i> New post
-      <% end %>
-    </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Posts</h1>
+    <div class="text-muted-foreground"><%= pluralize(@posts.size, "post") %> · powered by NodeDB FTS</div>
+  </div>
+  <div class="flex gap-2">
+    <%= link_to new_post_path, class: "btn" do %>
+      <i class="ti ti-plus mr-1"></i> New post
+    <% end %>
   </div>
 </div>
 
-<div class="card mt-3">
-  <div class="card-body border-bottom py-3">
-    <%= form_with url: search_posts_path, method: :get, local: true, class: "row g-2" do |f| %>
-      <div class="col">
-        <div class="input-icon">
-          <span class="input-icon-addon"><i class="ti ti-search"></i></span>
-          <%= f.text_field :q, value: @query, placeholder: "Full-text search…", class: "form-control" %>
-        </div>
+<div class="card mt-4">
+  <section class="border-b py-3">
+    <%= form_with url: search_posts_path, method: :get, local: true, class: "flex gap-2" do |f| %>
+      <div class="relative flex-1">
+        <span class="absolute inset-y-0 left-3 flex items-center text-muted-foreground"><i class="ti ti-search"></i></span>
+        <%= f.text_field :q, value: @query, placeholder: "Full-text search…", class: "input pl-9" %>
       </div>
-      <div class="col-auto"><%= f.submit "Search", class: "btn btn-primary" %></div>
+      <div><%= f.submit "Search", class: "btn" %></div>
     <% end %>
-  </div>
+  </section>
 
   <% if @query.present? %>
-    <div class="card-body border-bottom">
-      <h3 class="card-title">FTS results — <%= @hits.size %> hit(s) for <em>“<%= @query %>”</em></h3>
+    <section class="border-b">
+      <h2 class="font-semibold">FTS results — <%= @hits.size %> hit(s) for <em>“<%= @query %>”</em></h2>
       <% if @hits.empty? %>
-        <p class="text-secondary mb-0">No matches.</p>
+        <p class="text-muted-foreground">No matches.</p>
       <% else %>
-        <div class="table-responsive">
-          <table class="table table-vcenter">
+        <div class="table-container">
+          <table class="table">
             <thead><tr><th>Title</th><th>Body</th></tr></thead>
             <tbody>
             <% @hits.each do |h| %>
               <tr>
                 <td><%= link_to h[:post]&.title || "(missing)", post_path(h[:id]) %></td>
-                <td class="text-secondary"><%= truncate(h[:post]&.body.to_s, length: 80) %></td>
+                <td class="text-muted-foreground"><%= truncate(h[:post]&.body.to_s, length: 80) %></td>
               </tr>
             <% end %>
             </tbody>
           </table>
         </div>
       <% end %>
-    </div>
+    </section>
   <% end %>
 
   <% if @posts.any? %>
-    <div class="list-group list-group-flush">
+    <div class="divide-y">
       <% @posts.each do |p| %>
-        <%= link_to post_path(p), class: "list-group-item list-group-item-action" do %>
-          <div class="row align-items-center">
-            <div class="col">
+        <%= link_to post_path(p), class: "block px-6 py-3 hover:bg-muted" do %>
+          <div class="flex items-center gap-4">
+            <div class="flex-1">
               <strong><%= p.title %></strong>
-              <div class="text-secondary small"><%= truncate(p.body.to_s, length: 90) %></div>
+              <div class="text-sm text-muted-foreground"><%= truncate(p.body.to_s, length: 90) %></div>
             </div>
-            <div class="col-auto text-secondary small"><i class="ti ti-chevron-right"></i></div>
+            <div class="text-sm text-muted-foreground"><i class="ti ti-chevron-right"></i></div>
           </div>
         <% end %>
       <% end %>
     </div>
   <% else %>
-    <div class="card-body text-center text-secondary py-5">
-      <i class="ti ti-message-off display-4 d-block mb-2"></i>
-      No posts yet. <%= link_to "Write one", new_post_path %>.
-    </div>
+    <section>
+      <div class="flex flex-col items-center gap-2 py-12 text-muted-foreground">
+        <i class="ti ti-message-off text-4xl"></i>
+        <div>No posts yet. <%= link_to "Write one", new_post_path %>.</div>
+      </div>
+    </section>
   <% end %>
 </div>

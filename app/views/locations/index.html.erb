@@ -1,34 +1,32 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">Locations &amp; Map</h2>
-      <div class="text-secondary"><%= pluralize(@locations.size, "pin") %> · document_strict + Ruby haversine</div>
-    </div>
-    <div class="col-auto btn-list">
-      <%= link_to near_locations_path, class: "btn" do %><i class="ti ti-current-location me-1"></i> Find near<% end %>
-      <%= link_to new_location_path, class: "btn btn-primary" do %><i class="ti ti-plus me-1"></i> Pin location<% end %>
-    </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Locations &amp; Map</h1>
+    <p class="text-muted-foreground"><%= pluralize(@locations.size, "pin") %> · document_strict + Ruby haversine</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <%= link_to near_locations_path, class: "btn", data: { variant: "outline" } do %><i class="ti ti-current-location mr-1"></i> Find near<% end %>
+    <%= link_to new_location_path, class: "btn" do %><i class="ti ti-plus mr-1"></i> Pin location<% end %>
   </div>
 </div>
 
-<div class="row mt-3 g-3">
-  <aside class="col-lg-4">
+<div class="mt-4 grid gap-4 lg:grid-cols-3">
+  <aside>
     <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Pins</h3>
-      </div>
+      <header>
+        <h2>Pins</h2>
+      </header>
       <% if @locations.any? %>
-        <div class="list-group list-group-flush" id="pin-list">
+        <div class="divide-y border-t" id="pin-list">
           <% @locations.each do |loc| %>
-            <div class="list-group-item list-group-item-action px-3 py-2 d-flex align-items-center"
+            <div class="flex items-center px-4 py-2 hover:bg-muted/50"
                  data-loc-id="<%= loc.id %>" data-lat="<%= loc.lat %>" data-lon="<%= loc.lon %>" style="cursor: pointer;">
-              <div class="me-2"><span class="avatar avatar-xs bg-azure-lt"><i class="ti ti-map-pin"></i></span></div>
-              <div class="flex-fill">
-                <div class="fw-semibold"><%= loc.name.presence || "(unnamed)" %></div>
-                <div class="text-secondary small"><code><%= loc.lat %>, <%= loc.lon %></code></div>
+              <div class="mr-2"><span class="flex size-6 items-center justify-center rounded-full bg-muted text-muted-foreground"><i class="ti ti-map-pin"></i></span></div>
+              <div class="flex-1">
+                <div class="font-semibold"><%= loc.name.presence || "(unnamed)" %></div>
+                <div class="text-sm text-muted-foreground"><code><%= loc.lat %>, <%= loc.lon %></code></div>
               </div>
-              <div class="ms-2">
-                <%= button_to location_path(loc.id), method: :delete, data: { turbo_confirm: "Sure?" }, class: "btn btn-sm btn-ghost-danger" do %>
+              <div class="ml-2">
+                <%= button_to location_path(loc.id), method: :delete, data: { turbo_confirm: "Sure?", variant: "ghost", size: "icon-sm" }, class: "btn text-destructive" do %>
                   <i class="ti ti-trash"></i>
                 <% end %>
               </div>
@@ -36,16 +34,18 @@
           <% end %>
         </div>
       <% else %>
-        <div class="card-body text-center text-secondary py-4">
-          <i class="ti ti-map-pin-off display-6 d-block mb-2"></i>
-          No pins yet. <%= link_to "Add one", new_location_path %>.
-        </div>
+        <section>
+          <div class="flex flex-col items-center gap-2 py-12 text-center text-muted-foreground">
+            <i class="ti ti-map-pin-off text-3xl"></i>
+            <div>No pins yet. <%= link_to "Add one", new_location_path %>.</div>
+          </div>
+        </section>
       <% end %>
     </div>
   </aside>
 
-  <section class="col-lg-8">
-    <div class="card">
+  <section class="lg:col-span-2">
+    <div class="card overflow-hidden">
       <div id="map" style="height: 600px;"></div>
     </div>
   </section>

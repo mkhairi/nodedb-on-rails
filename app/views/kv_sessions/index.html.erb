@@ -1,86 +1,86 @@
-<div class="page-header d-print-none">
-  <div class="row align-items-center">
-    <div class="col">
-      <h2 class="page-title">KV store</h2>
-      <div class="text-secondary"><%= pluralize(@entries.size, "entry") %></div>
-    </div>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">KV store</h1>
+    <div class="text-muted-foreground"><%= pluralize(@entries.size, "entry") %></div>
   </div>
 </div>
 
-<div class="row mt-3 g-3">
-  <div class="col-md-7">
-    <div class="card h-100">
-      <div class="card-header"><h3 class="card-title">Set / overwrite</h3></div>
-      <div class="card-body">
-        <%= form_with url: kv_sessions_path, method: :post, local: true, class: "row g-2" do |f| %>
-          <div class="col-md-4">
-            <%= f.label :key, class: "form-label" %>
-            <%= f.text_field :key, placeholder: "session_abc", class: "form-control" %>
+<div class="grid gap-4 mt-4 md:grid-cols-12">
+  <div class="md:col-span-7">
+    <div class="card h-full">
+      <header><h2>Set / overwrite</h2></header>
+      <section>
+        <%= form_with url: kv_sessions_path, method: :post, local: true, class: "grid grid-cols-12 gap-2" do |f| %>
+          <div role="group" class="field col-span-4">
+            <%= f.label :key %>
+            <%= f.text_field :key, placeholder: "session_abc", class: "input" %>
           </div>
-          <div class="col-md-6">
-            <%= f.label :value, class: "form-label" %>
-            <%= f.text_field :value, placeholder: "token-xyz", class: "form-control" %>
+          <div role="group" class="field col-span-6">
+            <%= f.label :value %>
+            <%= f.text_field :value, placeholder: "token-xyz", class: "input" %>
           </div>
-          <div class="col-md-2 d-flex align-items-end">
-            <%= f.submit "Save", class: "btn btn-primary w-100" %>
+          <div class="col-span-2 flex items-end">
+            <%= f.submit "Save", class: "btn w-full" %>
           </div>
         <% end %>
-      </div>
+      </section>
     </div>
   </div>
 
-  <div class="col-md-5">
-    <div class="card h-100">
-      <div class="card-header"><h3 class="card-title">Lookup</h3></div>
-      <div class="card-body">
-        <%= form_with url: kv_sessions_path, method: :get, local: true, class: "row g-2" do |f| %>
-          <div class="col">
-            <%= f.text_field :k, value: @lookup_key, placeholder: "key…", class: "form-control" %>
+  <div class="md:col-span-5">
+    <div class="card h-full">
+      <header><h2>Lookup</h2></header>
+      <section>
+        <%= form_with url: kv_sessions_path, method: :get, local: true, class: "flex gap-2" do |f| %>
+          <div class="flex-1">
+            <%= f.text_field :k, value: @lookup_key, placeholder: "key…", class: "input" %>
           </div>
-          <div class="col-auto">
-            <%= f.submit "Get", class: "btn" %>
+          <div>
+            <%= f.submit "Get", class: "btn", data: { variant: "outline" } %>
           </div>
         <% end %>
         <% if @lookup_key.present? %>
-          <div class="mt-3">
-            <div class="text-secondary small">Result for <code><%= @lookup_key %></code></div>
+          <div class="mt-4">
+            <div class="text-muted-foreground text-sm">Result for <code><%= @lookup_key %></code></div>
             <% if @lookup_value.nil? %>
-              <span class="badge bg-orange-lt">not set</span>
+              <span class="badge text-orange-600" data-variant="outline">not set</span>
             <% else %>
-              <code class="d-block mt-1 p-2 bg-light rounded"><%= @lookup_value %></code>
+              <code class="block mt-1 p-2 bg-muted rounded-md"><%= @lookup_value %></code>
             <% end %>
           </div>
         <% end %>
-      </div>
+      </section>
     </div>
   </div>
 </div>
 
-<div class="card mt-3">
-  <div class="card-header"><h3 class="card-title">All entries</h3></div>
-  <% if @entries.any? %>
-    <div class="table-responsive">
-      <table class="table table-vcenter card-table">
-        <thead><tr><th>Key</th><th>Value</th><th class="w-1"></th></tr></thead>
-        <tbody>
-        <% @entries.each do |e| %>
-          <tr>
-            <td><code><%= e.key %></code></td>
-            <td><code><%= e.value %></code></td>
-            <td>
-              <%= button_to kv_session_path(key: e.key), method: :delete, data: { turbo_confirm: "Sure?" }, class: "btn btn-sm btn-ghost-danger" do %>
-                <i class="ti ti-trash"></i>
-              <% end %>
-            </td>
-          </tr>
-        <% end %>
-        </tbody>
-      </table>
-    </div>
-  <% else %>
-    <div class="card-body text-center text-secondary py-5">
-      <i class="ti ti-key-off display-4 d-block mb-2"></i>
-      No entries yet.
-    </div>
-  <% end %>
+<div class="card mt-4">
+  <header><h2>All entries</h2></header>
+  <section>
+    <% if @entries.any? %>
+      <div class="table-container">
+        <table class="table">
+          <thead><tr><th>Key</th><th>Value</th><th></th></tr></thead>
+          <tbody>
+          <% @entries.each do |e| %>
+            <tr>
+              <td><code><%= e.key %></code></td>
+              <td><code><%= e.value %></code></td>
+              <td class="text-end">
+                <%= button_to kv_session_path(key: e.key), method: :delete, data: { turbo_confirm: "Sure?" }, class: "btn text-destructive", "data-variant": "ghost", "data-size": "icon-sm" do %>
+                  <i class="ti ti-trash"></i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="flex flex-col items-center gap-2 py-12 text-muted-foreground">
+        <i class="ti ti-key-off text-4xl"></i>
+        <div class="font-medium text-foreground">No entries yet.</div>
+      </div>
+    <% end %>
+  </section>
 </div>
