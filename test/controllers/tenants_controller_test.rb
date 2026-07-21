@@ -24,8 +24,10 @@ class TenantsControllerTest < ActionDispatch::IntegrationTest
 
     get tenant_path(NAME)
     assert_response :success
-    # Isolation proof panel must show the tenant-side failure.
-    assert_match(/table not found: articles/, response.body)
+    # Isolation proof panel must show the tenant-side failure. Upstream
+    # wording varies by build: older "table not found", current
+    # 'collection "articles" does not exist'.
+    assert_match(/table not found: articles|collection (&quot;|")articles(&quot;|") does not exist/, response.body)
 
     marker = "note #{SecureRandom.hex(3)}"
     post add_note_tenant_path(NAME), params: { body: marker }
