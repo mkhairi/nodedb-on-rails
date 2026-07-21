@@ -32,11 +32,15 @@
   </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/apexcharts@5.16.0/dist/apexcharts.min.js"
+<script id="apexcharts-cdn"
+        src="https://cdn.jsdelivr.net/npm/apexcharts@5.16.0/dist/apexcharts.min.js"
         integrity="sha384-ev+0gnMiCR/xVXDO/DIRntnh/SqpByfMpm3uB8SFR/IkPnsSdZHnyi/NDdUZUXOv"
         crossorigin="anonymous"></script>
 <script>
   (function () {
+    // Under Turbo Drive body swaps the external script above loads async,
+    // so wait for it instead of assuming ApexCharts is already defined.
+    function start() {
     const mk = (el, name, color, suffix) => new ApexCharts(
       document.querySelector(el), {
         chart: { type: "area", height: 220, animations: { enabled: true, dynamicAnimation: { speed: 800 } },
@@ -76,7 +80,14 @@
       }
     }
     tick();
-    setInterval(tick, 3000);
+    const timer = setInterval(tick, 3000);
+    // Stop polling when Turbo swaps the page out, or the loop keeps
+    // fetching /metrics/live forever after navigating away.
+    document.addEventListener("turbo:before-render", () => clearInterval(timer), { once: true });
+    }
+
+    if (window.ApexCharts) start();
+    else document.getElementById("apexcharts-cdn").addEventListener("load", start, { once: true });
   })();
 </script>
 
