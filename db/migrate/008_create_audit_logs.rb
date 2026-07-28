@@ -3,8 +3,7 @@
 # Reads project real columns on current upstream (plain SELECT,
 # count(*), AS OF SYSTEM TIME). AuditLog.record! writes autocommit —
 # historically required (transactional INSERTs were lost on bitemporal
-# collections, upstream BUG-024, since fixed) and kept because it
-# works on every build.
+# collections on older builds) and kept because it works everywhere.
 class CreateAuditLogs < ActiveRecord::Migration[8.0]
   def up
     create_collection :audit_logs, engine: :document_strict, bitemporal: true do |t|

@@ -75,8 +75,8 @@ class TenantSession
   end
 
   # NodeDB transiently rejected correct credentials under connection
-  # churn / right after CREATE USER (adapter bug tracker: BUG-034,
-  # since fixed upstream); the brief retry is kept as cheap robustness.
+  # churn / right after CREATE USER on older builds; the brief retry is
+  # kept as cheap robustness.
   def connect_with_retry(attempts: 8)
     cfg = ActiveRecord::Base.connection_pool.db_config.configuration_hash
     NodeDB::Connection.connect(

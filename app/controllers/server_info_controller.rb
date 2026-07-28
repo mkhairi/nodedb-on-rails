@@ -67,7 +67,7 @@ class ServerInfoController < ApplicationController
     # the helpers fail closed (`safe_show_array`) so a stricter NodeDB
     # build or a non-superuser session can't blank the whole page.
     # Real row sets on both transports since upstream fixed native
-    # SHOW routing (BUG-022).
+    # SHOW routing.
     @ops_stats   = safe_show_array(conn, :show_stats)
     @ops_metrics = safe_show_array(conn, :show_metrics)
     @ops_memory  = safe_show_array(conn, :show_memory)

@@ -1,8 +1,8 @@
 class CreateLocations < ActiveRecord::Migration[8.0]
   def up
-    # NodeDB's spatial engine drops typed columns (BUG-012) and ignores
-    # ST_GeomFromText on INSERT (BUG-011), so the sample app stores plain
-    # lat/lon and computes haversine in Ruby. Use document_strict.
+    # The sample app stores plain lat/lon and computes haversine in
+    # Ruby rather than leaning on the spatial engine, which was unusable
+    # for most of the alpha. Use document_strict.
     create_document_strict :locations do |t|
       t.column :id,   "TEXT PRIMARY KEY"
       t.column :name, :text

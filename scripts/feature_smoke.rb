@@ -178,9 +178,9 @@ class FeatureSmoke
     record("graph.pagerank", (pr.length > 0 ? :ok : :fail), "rows=#{pr.length}")
   end
 
-  # Idiomatic AR hash-conditions — silently returned empty before the
-  # adapter's BUG-025 dequalification rewrite; this section is the
-  # regression canary at the app level.
+  # Idiomatic AR hash-conditions — silently returned empty on older
+  # upstream builds; this section is the regression canary at the app
+  # level.
   def section_idiomatic_where
     puts
     puts "=== Idiomatic ActiveRecord (hash-where / conditional count) ==="
@@ -241,7 +241,7 @@ class FeatureSmoke
   # session (fresh pgwire connection as that user) must be isolated
   # from the default tenant's collections. A fixed tenant is reused
   # across runs — provision-only, no retire (tenants become
-  # undroppable once their built-in admin inherits ownership, BUG-051).
+  # undroppable once their built-in admin inherits ownership).
   def section_tenants
     puts
     puts "=== Tenants ==="

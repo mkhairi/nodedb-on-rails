@@ -4,10 +4,10 @@ class Metric < ApplicationRecord
   self.primary_key = nil
 
   # The collection declares its TIME_KEY column as `timestamp`
-  # (BUG-063: upstream used to rename any TIME_KEY column to
-  # `timestamp` on projection and no longer does, so the declared name
-  # has to match what the SQL builders filter on — see
-  # `NodeDB::SQL::Timeseries`, which hardcodes `timestamp`). Keep the
+  # (BUG-063: upstream honours the declared TIME_KEY name instead of
+  # projecting it as `timestamp`, so the declared name has to match
+  # what the SQL builders filter on — see `NodeDB::SQL::Timeseries`,
+  # which hardcodes `timestamp`). Keep the
   # user-facing `ts` accessor for views and controllers.
   # `alias_attribute :ts, :timestamp` fails because `timestamp` isn't
   # in the AR-declared column set (NodeDB projects it at query time,

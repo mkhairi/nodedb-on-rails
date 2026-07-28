@@ -1,8 +1,8 @@
 require "test_helper"
 
-# Locations sidestep the spatial engine (BUG-011) by storing
-# lat/lon FLOAT columns in a document_strict collection and computing
-# haversine in Ruby.
+# Locations sidestep the spatial engine by storing lat/lon FLOAT
+# columns in a document_strict collection and computing haversine in
+# Ruby.
 class LocationsControllerTest < ActionDispatch::IntegrationTest
   setup { skip_if_daemon_down! }
 
