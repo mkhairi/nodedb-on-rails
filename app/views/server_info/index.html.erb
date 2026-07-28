@@ -16,7 +16,16 @@
       <div class="flex items-center gap-3">
         <span class="flex size-10 shrink-0 items-center justify-center rounded-md bg-blue-600 text-white"><i class="ti ti-database"></i></span>
         <div>
-          <div class="font-medium">NodeDB <%= @server[:version] %></div>
+          <div class="font-medium">
+            NodeDB <%= @server[:nodedb_version] || @server[:version] %>
+            <% unless @server[:version_supported].nil? %>
+              <% if @server[:version_supported] %>
+                <span class="badge text-green-600" data-variant="outline" title="Adapter requires NodeDB <%= @server[:minimum_version] %> or newer">supported</span>
+              <% else %>
+                <span class="badge text-red-600" data-variant="outline" title="Adapter requires NodeDB <%= @server[:minimum_version] %> or newer">below <%= @server[:minimum_version] %></span>
+              <% end %>
+            <% end %>
+          </div>
           <div class="text-muted-foreground">
             <% if @server[:transport] == "native" %>
               <span class="badge text-green-600" data-variant="outline">native</span>
@@ -69,8 +78,16 @@
     <header><h2><i class="ti ti-plug-connected mr-1"></i> NodeDB server</h2></header>
     <section>
       <dl class="grid gap-x-8 gap-y-2 sm:grid-cols-2">
-        <dt class="text-sm text-muted-foreground">Version</dt>
-        <dd class="font-medium"><code><%= @server[:version] %></code></dd>
+        <dt class="text-sm text-muted-foreground">NodeDB version</dt>
+        <dd class="font-medium">
+          <code><%= @server[:nodedb_version] || "(unknown)" %></code>
+          <% if @server[:version_supported] == false %>
+            <span class="badge text-red-600" data-variant="outline">below <%= @server[:minimum_version] %></span>
+          <% end %>
+          <span class="text-muted-foreground text-sm">minimum <%= @server[:minimum_version] %></span>
+        </dd>
+        <dt class="text-sm text-muted-foreground">PostgreSQL compatibility</dt>
+        <dd class="font-medium"><code><%= @server[:pg_compat_version] || @server[:version] %></code> <span class="text-muted-foreground text-sm">reported to libpq</span></dd>
         <dt class="text-sm text-muted-foreground">Transport</dt>
         <dd class="font-medium">
           <% if @server[:transport] == "native" %>
@@ -126,6 +143,89 @@
         <dt class="text-sm text-muted-foreground">pg</dt>
         <dd class="font-medium"><code><%= @adapter_gem[:pg] || "(not loaded)" %></code></dd>
       </dl>
+    </section>
+  </div>
+</div>
+
+<div class="mt-4 grid gap-4 lg:grid-cols-2">
+  <div class="card h-full">
+    <header>
+      <h2><i class="ti ti-shield-check mr-1"></i> Adapter compensations</h2>
+      <div class="card-action text-muted-foreground text-sm">what the adapter stands in for</div>
+    </header>
+    <section>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Surface</th>
+              <th>Value</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @compensations.each do |c| %>
+              <tr>
+                <td><code><%= c[:name] %></code></td>
+                <td><code><%= c[:value].presence || "—" %></code></td>
+                <td class="text-muted-foreground text-sm"><%= c[:detail] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-muted-foreground mt-3 text-sm">
+        Full rollup in the adapter's
+        <a class="underline underline-offset-4" href="https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md">KNOWN_ISSUES.md</a>.
+      </p>
+    </section>
+  </div>
+
+  <div class="card h-full">
+    <header>
+      <h2><i class="ti ti-bolt mr-1"></i> DDL health</h2>
+      <div class="card-action text-muted-foreground text-sm">restart-wedge probe</div>
+    </header>
+    <section>
+      <% if @ddl_probe.nil? %>
+        <p class="text-muted-foreground">
+          A daemon restart can leave the data directory replaying its metadata
+          log forever: reads and writes keep working while every
+          <code>CREATE</code> / <code>DROP</code> fails with
+          <code>metadata propose timed out</code>. The probe creates and drops
+          a throwaway collection, so it only runs on request.
+        </p>
+        <a class="btn mt-3" data-variant="outline" href="<%= server_info_path(ddl_probe: 1) %>">
+          <i class="ti ti-player-play mr-1"></i> Run DDL probe
+        </a>
+      <% elsif @ddl_probe[:ok] %>
+        <div class="flex items-center gap-3">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-md bg-green-600 text-white"><i class="ti ti-check"></i></span>
+          <div>
+            <div class="font-medium">DDL healthy</div>
+            <div class="text-muted-foreground">CREATE + DROP round-tripped in <%= @ddl_probe[:elapsed_ms] %> ms</div>
+          </div>
+        </div>
+      <% else %>
+        <div class="flex items-center gap-3">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-md bg-red-600 text-white"><i class="ti ti-alert-triangle"></i></span>
+          <div>
+            <div class="font-medium">DDL failing</div>
+            <div class="text-muted-foreground">after <%= @ddl_probe[:elapsed_ms] %> ms</div>
+          </div>
+        </div>
+        <pre class="mt-3 overflow-x-auto rounded-md bg-muted p-3 text-sm"><%= @ddl_probe[:error] %></pre>
+        <p class="text-muted-foreground mt-3 text-sm">
+          If this reports <code>metadata propose timed out</code>, the data
+          directory is wedged — rebuild it, then re-run <code>bin/setup</code>
+          and the seeds.
+        </p>
+      <% end %>
+      <% if @ddl_probe %>
+        <a class="btn mt-3" data-variant="outline" href="<%= server_info_path(ddl_probe: 1) %>">
+          <i class="ti ti-refresh mr-1"></i> Re-run probe
+        </a>
+      <% end %>
     </section>
   </div>
 </div>
@@ -359,7 +459,7 @@
 </div>
 
 <h2 class="mt-6 text-xl font-semibold tracking-tight">
-  Operations <span class="badge text-sky-600 ml-2" data-variant="outline">NodeDB v0.3.0</span>
+  Operations
 </h2>
 <div class="text-muted-foreground">
   Surfaced by <code>connection.show_stats</code>,
@@ -436,7 +536,7 @@
             <thead>
               <tr>
                 <th>Engine</th>
-                <th class="text-end">Allocated</th>
+                <th class="text-end" title="Reported as 0 by this NodeDB build">Allocated</th>
                 <th class="text-end">Limit</th>
                 <th class="text-end">Peak</th>
                 <th class="text-end">Rejections</th>
@@ -445,7 +545,15 @@
             </thead>
             <tbody>
               <% @ops_memory.each do |r| %>
-                <% util = r["utilization_percent"].to_f %>
+                <%# This build reports allocated_bytes (and with it
+                    utilization_percent) as 0 for every engine, so fall
+                    back to the high-water mark against the limit —
+                    otherwise every bar reads 0% even where peak is not. %>
+                <% limit = r["limit_bytes"].to_i %>
+                <% peak  = r["peak_bytes"].to_i %>
+                <% reported = r["utilization_percent"].to_f %>
+                <% util = reported.positive? || limit.zero? ? reported : (peak * 100.0 / limit) %>
+                <% util = util.round(2) %>
                 <tr>
                   <td><code><%= r["engine"] %></code></td>
                   <td class="text-end"><%= number_to_human_size(r["allocated_bytes"].to_i) %></td>
@@ -458,7 +566,7 @@
                         <div class="h-full <%= util > 80 ? "bg-red-500" : util > 50 ? "bg-yellow-500" : "bg-green-500" %>"
                              style="width: <%= [util, 100].min %>%"></div>
                       </div>
-                      <span class="text-muted-foreground text-sm"><%= util %>%</span>
+                      <span class="text-muted-foreground text-sm" title="<%= reported.positive? ? "reported by SHOW MEMORY" : "peak / limit — SHOW MEMORY reports 0% here" %>"><%= util %>%</span>
                     </div>
                   </td>
                 </tr>
