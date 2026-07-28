@@ -47,7 +47,7 @@ class SocialNodesController < ApplicationController
       val = (r["rank"] || r["score"] || r["pagerank"]).to_f
       h[key] = val if val > h[key]
     end
-    # NodeDB v0.3.0: persistent O(1) edge-store counters via SHOW GRAPH STATS.
+    # Persistent O(1) edge-store counters via SHOW GRAPH STATS.
     @stats = SocialNode.graph_stats.first
     @stats_labels = parse_label_breakdown(@stats)
   rescue => e
@@ -58,9 +58,9 @@ class SocialNodesController < ApplicationController
     @stats_labels = []
   end
 
-  # Personalized PageRank demo. NodeDB v0.3.0 adds a `PERSONALIZATION`
-  # clause to `GRAPH ALGO PAGERANK` that biases the teleport vector
-  # toward a seed set. The nodedb-ruby SQL builder JSON-encodes the
+  # Personalized PageRank demo. `GRAPH ALGO PAGERANK` takes a
+  # `PERSONALIZATION` clause that biases the teleport vector toward a
+  # seed set. The nodedb-ruby SQL builder JSON-encodes the
   # `personalization:` Hash so the rendered DDL matches NodeDB's parser.
   #
   #   GET /social_nodes/recommend?seed=alice
