@@ -2,14 +2,13 @@
 
 > ## ⚠️ ALPHA DEMO — DO NOT USE IN PRODUCTION
 >
-> Depends on `activerecord-nodedb-adapter` (**`0.1.0.alpha.9`**) and
-> `nodedb-ruby` (**`0.1.0.alpha.6`**), both **experimental and never
+> Depends on `activerecord-nodedb-adapter` (**`0.1.0.alpha.12`**) and
+> `nodedb-ruby` (**`0.1.0.alpha.10`**), both **experimental and never
 > tested in production**. This app exists solely as an end-to-end smoke
 > test for the adapter stack.
 >
-> Run on disposable data only — NodeDB's current upstream loses
-> document-collection contents across daemon restarts (see *Operating
-> notes* below).
+> Run on disposable data only — a daemon restart can leave the data
+> directory unable to run DDL (see *Operating notes* below).
 
 End-to-end demo proving [`activerecord-nodedb-adapter`](https://github.com/mkhairi/activerecord-nodedb-adapter) works against the
 Rails 8.x request → controller → view → ActiveRecord → NodeDB stack,
@@ -45,9 +44,9 @@ over both the pgwire and native transports.
 | Ruby     | 4.0.1 (mise-managed) |
 | Rails    | 8.1.3 |
 | Puma     | 8.0.1 |
-| Adapter  | `activerecord-nodedb-adapter` 0.1.0.alpha.9 |
-| Core lib | `nodedb-ruby` 0.1.0.alpha.6 |
-| NodeDB   | local source build (`../nodedb`, upstream `main`), pgwire `127.0.0.1:6432`, native `:6433` |
+| Adapter  | `activerecord-nodedb-adapter` 0.1.0.alpha.12 |
+| Core lib | `nodedb-ruby` 0.1.0.alpha.10 |
+| NodeDB   | **0.4.0 or newer** — local source build (`../nodedb`, upstream `main`, verified at `87053aa7b`), pgwire `127.0.0.1:6432`, native `:6433` |
 
 ## Layout
 
@@ -69,8 +68,10 @@ nodedb-on-rails/
 
 ## Setup
 
-NodeDB must be running. The adapter pulls the auto-generated superuser
-password from `~/.local/share/nodedb/.superuser_password`.
+NodeDB **0.4.0 or newer** must be running — earlier lines are not
+supported, and a pre-0.4 data directory makes the daemon panic at boot.
+The adapter pulls the auto-generated superuser password from
+`~/.local/share/nodedb/.superuser_password`.
 
 ### Clone + standard setup
 
@@ -123,10 +124,12 @@ transport.
 
 ### Operating notes (current upstream)
 
-- **Daemon restarts lose document-collection contents** (upstream
-  durability bug, tracked in the [adapter's bug tracker][ar-bugs] —
-  the critical entry in `docs/KNOWN_ISSUES.md`): after any restart,
-  wipe the data dir and re-run `bin/setup` + seeds.
+- **A daemon restart can wedge the data directory's DDL.** Stored rows
+  survive and reads/writes keep working, but metadata-log replay can
+  stick on a descriptor anomaly, after which every `CREATE` / `DROP`
+  fails with `metadata propose timed out`. Recovery is a fresh data
+  dir plus `bin/setup` + seeds, so keep this demo on disposable data.
+  Details in the adapter's `docs/KNOWN_ISSUES.md`.
 - Dev and test environments share the default `nodedb` database
   (databases created via `CREATE DATABASE` are unusable upstream).
 - Rapid one-off connections can hit transient
@@ -288,12 +291,10 @@ default: &default
 ## Known issues
 
 NodeDB-side quirks the stack works around (and the ones it can't) are
-tracked centrally: per-bug reproductions live in the
-[adapter's issue tracker][ar-bugs] (titles prefixed
-`[upstream:NodeDB] BUG-NNN`), and the user-facing rollup is the
-adapter's [`docs/KNOWN_ISSUES.md`](https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md).
-The three that shape day-to-day use of this demo are summarised under
-*Operating notes* above.
+tracked centrally, not here: the user-facing rollup is the adapter's
+[`docs/KNOWN_ISSUES.md`](https://github.com/mkhairi/activerecord-nodedb-adapter/blob/main/docs/KNOWN_ISSUES.md),
+backed by its [issue tracker][ar-bugs]. The ones that shape day-to-day
+use of this demo are summarised under *Operating notes* above.
 
 ## Test results
 
