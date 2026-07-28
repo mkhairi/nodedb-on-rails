@@ -27,9 +27,8 @@
     keeps the mechanics visible. Generated tenant passwords are stored in
     plaintext in the <code>tenant_registry</code> collection: demo-only,
     disposable data. <strong>Provision-only:</strong> there is no retire
-    button — <code>DROP USER</code> currently leaves dangling catalog owner
-    references that fail the daemon's boot integrity check on restart
-    (upstream BUG-035), so tenants stay once created.
+    button — retiring a tenant has left dangling catalog ownership behind,
+    and the demo has no need for it, so tenants stay once created.
     </p>
   </section>
 </div>

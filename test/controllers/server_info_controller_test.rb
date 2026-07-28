@@ -24,9 +24,9 @@ class ServerInfoControllerTest < ActionDispatch::IntegrationTest
     assert_match(/default/, response.body)
   end
 
-  test "GET /server_info renders no BUG-022 banner on either transport" do
+  test "GET /server_info renders no empty-ops banner on either transport" do
     get server_info_path
-    refute_match(/BUG-022 banner|STATS \/ METRICS \/ MEMORY \/ ROLES are empty/, response.body)
+    refute_match(/STATS \/ METRICS \/ MEMORY \/ ROLES are empty/, response.body)
   end
 
   test "GET /server_info shows the active transport badge" do

@@ -54,12 +54,11 @@ class Tenant < ApplicationRecord
     tenant
   end
 
-  # Provision-only on purpose: there is no retire. DROP TENANT
-  # deadlocks once the tenant's built-in admin has inherited ownership
-  # of anything a dropped user owned — upstream BUG-051 in the
-  # adapter's bug tracker (successor to the fixed BUG-035 boot brick).
-  # Keeping the registry row also keeps the credentials, so a tenant
-  # stays usable across app restarts.
+  # Provision-only on purpose: there is no retire. DROP TENANT has
+  # deadlocked once the tenant's built-in admin inherited ownership of
+  # anything a dropped user owned, and the demo has no need to retire
+  # tenants. Keeping the registry row also keeps the credentials, so a
+  # tenant stays usable across app restarts.
   def self.find_or_provision!(name)
     find_by(id: name.to_s) || provision!(name)
   end

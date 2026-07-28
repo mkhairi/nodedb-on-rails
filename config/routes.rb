@@ -40,7 +40,7 @@ Rails.application.routes.draw do
   # Multi-tenancy demo: CREATE TENANT + tenant-bound users; per-request
   # tenant sessions prove the isolation boundary. Provision-only —
   # tenants become undroppable once their built-in admin inherits
-  # ownership (BUG-051).
+  # ownership.
   resources :tenants, only: %i[index show create] do
     member do
       post :add_note

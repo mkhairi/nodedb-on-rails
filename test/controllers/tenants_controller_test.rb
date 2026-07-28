@@ -3,8 +3,7 @@ require "test_helper"
 # Multi-tenancy demo: provisioning DDL over the superuser connection,
 # tenant-scoped work through a per-request tenant session. A fixed
 # tenant is reused across runs — provision-only, no retire (tenants
-# become undroppable once their built-in admin inherits ownership,
-# BUG-051).
+# become undroppable once their built-in admin inherits ownership).
 class TenantsControllerTest < ActionDispatch::IntegrationTest
   NAME = "test_tenant".freeze
 
