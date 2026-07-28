@@ -1,10 +1,9 @@
 require "test_helper"
 
-# Regression coverage for the `Metric#ts` reader: NodeDB silently
-# renames every TIME_KEY column to `timestamp` on projection, so
-# `m.ts` reads the renamed attribute. Without the explicit reader on
-# the model the view raised ActiveModel::MissingAttributeError on
-# every page load.
+# Regression coverage for the `Metric#ts` reader: the metrics
+# collection declares its TIME_KEY column as `timestamp`, so `m.ts`
+# reads that attribute. Without the explicit reader on the model the
+# view raised ActiveModel::MissingAttributeError on every page load.
 class MetricsControllerTest < ActionDispatch::IntegrationTest
   setup { skip_if_daemon_down! }
 
@@ -14,7 +13,7 @@ class MetricsControllerTest < ActionDispatch::IntegrationTest
     refute_match(/MissingAttributeError|missing attribute 'ts'/, response.body)
   end
 
-  test "Metric#ts reads the upstream-renamed timestamp attribute" do
+  test "Metric#ts reads the TIME_KEY timestamp attribute" do
     m = Metric.limit(1).to_a.first
     skip "no metrics seeded yet" if m.nil?
 
