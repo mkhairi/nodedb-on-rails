@@ -19,11 +19,11 @@ ActiveRecord::Schema[8.1].define(version: 10) do
 
   create_document_strict "audit_logs", bitemporal: true do |t|
     t.column :id, "TEXT PRIMARY KEY"
-    t.column :actor, "TEXT"
-    t.column :action, "TEXT"
-    t.column :target, "TEXT"
-    t.column :context, "TEXT"
-    t.column :recorded_at, "TEXT"
+    t.column :actor, "text"
+    t.column :action, "text"
+    t.column :target, "text"
+    t.column :context, "text"
+    t.column :recorded_at, "text"
   end
 
   create_collection "embeddings" do |t|
@@ -48,7 +48,7 @@ ActiveRecord::Schema[8.1].define(version: 10) do
   end
 
   create_timeseries "metrics" do |t|
-    t.column :ts, "TIMESTAMP TIME_KEY"
+    t.column :timestamp, "BIGINT TIME_KEY"
     t.column :host, "text"
     t.column :value, "float"
   end

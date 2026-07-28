@@ -22,7 +22,7 @@ class SystemSampler
     now  = Time.now.utc.iso8601
     SERIES.each do |name, gauge|
       conn.execute(
-        "INSERT INTO metrics (ts, host, value) VALUES (" \
+        "INSERT INTO metrics (timestamp, host, value) VALUES (" \
         "#{conn.quote(now)}, #{conn.quote(name)}, #{gauge.call})"
       )
     end
@@ -33,7 +33,7 @@ class SystemSampler
   def self.series(window: 10.minutes)
     rows = Metric.since(Time.now.utc - window).to_a
     SERIES.keys.map do |name|
-      # Metric#ts is the upstream-renamed TIME_KEY, already epoch ms.
+      # Metric#ts reads the TIME_KEY column, already epoch ms.
       data = rows.select { |m| m.host == name }
                  .map { |m| [m.ts.to_i, m.value.to_f] }
                  .sort_by(&:first)
