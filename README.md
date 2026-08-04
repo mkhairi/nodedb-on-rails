@@ -281,7 +281,7 @@ default: &default
   adapter:  nodedb
   host:     localhost
   port:     6432
-  database: nodedb
+  database: default
   username: nodedb
   password: <%= ENV.fetch("NODEDB_PASSWORD") {
     File.read(File.expand_path("~/.local/share/nodedb/.superuser_password")).strip rescue ""
