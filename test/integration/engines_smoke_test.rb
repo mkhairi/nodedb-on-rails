@@ -25,7 +25,7 @@ class EnginesSmokeTest < ActionDispatch::IntegrationTest
     conn = ActiveRecord::Base.connection
     host = "smoke-host-#{SecureRandom.hex(2)}"
     conn.execute(
-      "INSERT INTO metrics (ts, host, value) VALUES (" \
+      "INSERT INTO metrics (timestamp, host, value) VALUES (" \
       "#{conn.quote(Time.now.utc.iso8601)}, #{conn.quote(host)}, 0.42)"
     )
     rows = conn.execute("SELECT host, value FROM metrics WHERE host = #{conn.quote(host)}").to_a

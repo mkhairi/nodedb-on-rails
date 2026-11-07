@@ -17,8 +17,7 @@ class MetricsControllerTest < ActionDispatch::IntegrationTest
     m = Metric.limit(1).to_a.first
     skip "no metrics seeded yet" if m.nil?
 
-    # Epoch ms; pgwire projects it as a TEXT string, native as Integer.
-    assert_match(/\A\d+\z/, m.ts.to_s)
+    assert_kind_of Time, m.ts
     assert_operator m.ts.to_i, :>, 0
   end
 

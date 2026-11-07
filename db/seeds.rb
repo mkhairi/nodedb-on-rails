@@ -19,13 +19,9 @@ conn = ActiveRecord::Base.connection
 # so clear one primary key at a time. Clearing the whole collection
 # rather than just this file's ids keeps a re-seed from stacking new
 # fixtures on top of an older generation's.
-# Some engines have no usable reset. A graph collection rejects every
-# DELETE once it carries an edge (BUG-065), a timeseries collection
-# reports "DELETE 0" and removes nothing (BUG-066), and DROP puts the
-# name into a retention window that blocks recreating it immediately —
-# so those sections seed once and then skip, rather than stacking a
-# second copy on every run. Start from a fresh data directory (or
-# `UNDROP COLLECTION <name>` after a manual drop) to re-seed them.
+# The audit trail seeds once and then skips, because each delete leaves a
+# tombstone version in its history. Start from a fresh data directory to
+# re-seed it.
 def already_seeded?(conn, collection, predicate = nil)
   sql = "SELECT id FROM #{collection}"
   sql += " WHERE #{predicate}" if predicate
@@ -173,15 +169,12 @@ FOLLOWS = [
   %w[kenji alice], %w[grace julia]
 ].freeze
 
-if already_seeded?(conn, "social_nodes", "id = 'alice'")
-  puts "    skipped — already seeded (DELETE is rejected once a collection has edges)"
-else
-  PEOPLE.each { |id, name| SocialNode.create!(id: id, name: name) }
-  FOLLOWS.each { |from, to| SocialNode.graph_insert_edge(from: from, to: to, type: "follows") }
-end
+clear_collection(SocialNode)
+PEOPLE.each { |id, name| SocialNode.create!(id: id, name: name) }
+FOLLOWS.each { |from, to| SocialNode.graph_insert_edge(from: from, to: to, type: "follows") }
 
 puts "==> metrics (timeseries) — 48h of host telemetry"
-# The TIME_KEY column is `timestamp` and carries epoch milliseconds.
+# The TIME_KEY column is `timestamp`, and INSERT takes epoch milliseconds.
 # Raw autocommit INSERTs on purpose: AR's transaction-wrapped insert
 # into a timeseries collection trips NodeDB's MVCC.
 HOSTS = {
@@ -206,14 +199,11 @@ metric_rows = HOSTS.flat_map do |host, shape|
   end
 end
 
-if already_seeded?(conn, "metrics", "host = 'web-01'")
-  puts "    skipped — already seeded (DELETE against a timeseries collection is a no-op)"
-  metric_rows = []
-else
-  metric_rows.each_slice(50) do |slice|
-    values = slice.map { |at, host, value| "(#{at}, #{conn.quote(host)}, #{value})" }.join(", ")
-    conn.execute("INSERT INTO metrics (timestamp, host, value) VALUES #{values}")
-  end
+# TRUNCATE, because DELETE is rejected on a timeseries collection.
+conn.execute("TRUNCATE metrics")
+metric_rows.each_slice(50) do |slice|
+  values = slice.map { |at, host, value| "(#{at}, #{conn.quote(host)}, #{value})" }.join(", ")
+  conn.execute("INSERT INTO metrics (timestamp, host, value) VALUES #{values}")
 end
 
 puts "==> embeddings (vector engine, dim 3) — semantic catalog"
@@ -300,7 +290,7 @@ puts "  posts         : #{Post.unscoped.from(Post.table_name).select('id').to_a.
 puts "  locations     : #{Location.unscoped.from(Location.table_name).select('id').to_a.size}"
 puts "  social_nodes  : #{SocialNode.unscoped.from(SocialNode.table_name).select('id').to_a.size} " \
      "(#{FOLLOWS.size} follow edges)"
-puts "  metrics       : #{conn.execute('SELECT id FROM metrics').to_a.size} " \
+puts "  metrics       : #{conn.select_value('SELECT count(*) FROM metrics')} " \
      "(#{metric_rows.size} seeded across #{HOSTS.size} hosts)"
 puts "  embeddings    : #{Embedding::SAMPLES.size} seeded (schemaless; not scan-countable)"
 puts "  kv_sessions   : #{conn.execute('SELECT key FROM kv_sessions').to_a.size}"

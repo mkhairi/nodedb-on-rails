@@ -136,10 +136,11 @@ SocialNode.graph_algo(:pagerank)</code></pre>
 end
 
 Metric.since(1.hour.ago).where(host: "sys.cpu_load")</code></pre>
-        <p class="text-muted-foreground text-sm mb-0">Quirks: the TIME_KEY column is
-        renamed to <code>timestamp</code> on projection (the model aliases it
-        back); AR's transaction-wrapped INSERT trips MVCC on timeseries
-        collections, so writes are raw autocommit statements.</p>
+        <p class="text-muted-foreground text-sm mb-0">Quirks: every written column
+        must be declared; <code>DELETE</code> is rejected, so clear with
+        <code>TRUNCATE</code> or a retention policy; AR's transaction-wrapped
+        INSERT trips MVCC on timeseries collections, so writes are raw
+        autocommit statements.</p>
       </section>
     </div>
 
@@ -208,8 +209,7 @@ AuditLog.as_of(1.hour.ago) # rows current at that instant</code></pre>
       <header><h2>Adapter features this app leans on</h2></header>
       <section>
         <ul class="mb-0 list-disc space-y-1 pl-5">
-          <li><strong>Qualified-SQL dequalifier</strong> — AR's <code>"table"."col"</code> refs rewritten before dispatch (NodeDB silently zero-matches them).</li>
-          <li><strong>GROUP BY re-aliasing</strong> — upstream drops group-key aliases; the adapter maps them back so <code>group(...).sum</code> works.</li>
+          <li><strong>Qualified-SQL dequalifier</strong> — AR's <code>"table"."col"</code> refs are rewritten before dispatch, because NodeDB silently zero-matches them in <code>IN</code>, <code>BETWEEN</code> and <code>LIKE</code>.</li>
           <li><strong>NodeDB-aware schema tracking</strong> — <code>schema_migrations</code> / <code>ar_internal_metadata</code> as document collections; <code>db:migrate</code>, rollback, and the schema dump all work.</li>
           <li><strong>Advisory locks</strong> — collection-based migration mutex plus a <code>with_advisory_lock</code> block API (NodeDB has no <code>pg_advisory_lock</code>).</li>
           <li><strong>Engine concerns</strong> — <code>Vector</code>, <code>Graph</code>, <code>Timeseries</code>, <code>Spatial</code>, <code>KV</code>, <code>FullTextSearch</code>, <code>Bitemporal</code>.</li>
@@ -221,8 +221,8 @@ AuditLog.as_of(1.hour.ago) # rows current at that instant</code></pre>
       <header><h2>Operating notes (current upstream)</h2></header>
       <section>
         <ul class="mb-2 list-disc space-y-1 pl-5">
-          <li><strong>Daemon restarts lose document-collection contents</strong> — counts and PK indexes survive, the data doesn't. Wipe the data dir and re-run <code>bin/setup</code> + seeds after any restart.</li>
-          <li><strong>Shared default database</strong> — databases created via <code>CREATE DATABASE</code> are write-only upstream; dev and test both use <code>nodedb</code>.</li>
+          <li><strong>Column names</strong> — avoid a column named <code>version</code>, <code>user</code>, <code>current_date</code> or <code>current_schema</code>. NodeDB resolves them to the function, even when quoted.</li>
+          <li><strong>Default database</strong> — the bootstrapped database is named <code>default</code>, and both transports reject a database name that does not exist.</li>
           <li><strong>Transient auth rejections</strong> — bursts of fresh connections can see <code>Password authentication failed</code> with correct credentials; retry ~1s. Pooled Rails connections are unaffected.</li>
         </ul>
         <div class="text-muted-foreground text-sm">

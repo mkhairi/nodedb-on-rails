@@ -25,7 +25,7 @@ class MetricsController < ApplicationController
     # update"); a direct statement is the pattern used by db/seeds.rb.
     conn = ActiveRecord::Base.connection
     conn.execute(
-      "INSERT INTO metrics (ts, host, value) VALUES (" \
+      "INSERT INTO metrics (timestamp, host, value) VALUES (" \
       "#{conn.quote(Time.now.utc.iso8601)}, " \
       "#{conn.quote(params[:host].presence || 'web-01')}, " \
       "#{params[:value].to_f})"
