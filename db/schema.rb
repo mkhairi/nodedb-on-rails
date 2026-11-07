@@ -26,9 +26,7 @@ ActiveRecord::Schema[8.1].define(version: 10) do
     t.column :recorded_at, "text"
   end
 
-  create_collection "embeddings" do |t|
-    t.column :document, "JSON"
-  end
+  create_collection "embeddings"
 
   create_kv "file_blobs" do |t|
     t.column :key, "TEXT PRIMARY KEY"
@@ -48,7 +46,7 @@ ActiveRecord::Schema[8.1].define(version: 10) do
   end
 
   create_timeseries "metrics" do |t|
-    t.column :timestamp, "BIGINT TIME_KEY"
+    t.column :timestamp, "TIMESTAMP TIME_KEY"
     t.column :host, "text"
     t.column :value, "float"
   end
@@ -59,9 +57,7 @@ ActiveRecord::Schema[8.1].define(version: 10) do
     t.column :body, "text"
   end
 
-  create_collection "social_nodes" do |t|
-    t.column :document, "JSON"
-  end
+  create_collection "social_nodes"
 
   create_document_strict "stored_files" do |t|
     t.column :id, "TEXT PRIMARY KEY"
