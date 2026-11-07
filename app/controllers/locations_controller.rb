@@ -30,10 +30,8 @@ class LocationsController < ApplicationController
     redirect_to locations_path, status: :moved_permanently
   end
 
-  # NodeDB's spatial read-side predicates (ST_DWithin, ST_Distance)
-  # remain unusable on current upstream (writes and raw GeoJSON reads
-  # work), so radius search is done in Ruby with haversine over the
-  # AR-loaded collection.
+  # `locations` stores plain lat/lon floats, not a geometry column, so
+  # radius search runs haversine in Ruby over the AR-loaded collection.
   def near
     @lat    = (params[:lat].presence || 40.7128).to_f
     @lon    = (params[:lon].presence || -74.0060).to_f

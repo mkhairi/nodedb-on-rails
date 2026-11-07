@@ -1,8 +1,6 @@
 class CreateLocations < ActiveRecord::Migration[8.0]
   def up
-    # The sample app stores plain lat/lon and computes haversine in
-    # Ruby rather than leaning on the spatial engine, which was unusable
-    # for most of the alpha. Use document_strict.
+    # The sample app stores plain lat/lon and computes haversine in Ruby.
     create_document_strict :locations do |t|
       t.column :id,   "TEXT PRIMARY KEY"
       t.column :name, :text
