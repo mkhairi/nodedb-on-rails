@@ -1,7 +1,7 @@
 class CreateMetrics < ActiveRecord::Migration[8.0]
   def up
     create_timeseries :metrics do |t|
-      t.column :timestamp, "BIGINT TIME_KEY"
+      t.column :timestamp, "TIMESTAMP TIME_KEY"
       t.column :host,  :text
       t.column :value, :float
     end

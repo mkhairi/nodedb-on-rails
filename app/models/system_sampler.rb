@@ -33,9 +33,8 @@ class SystemSampler
   def self.series(window: 10.minutes)
     rows = Metric.since(Time.now.utc - window).to_a
     SERIES.keys.map do |name|
-      # Metric#ts reads the TIME_KEY column, already epoch ms.
       data = rows.select { |m| m.host == name }
-                 .map { |m| [m.ts.to_i, m.value.to_f] }
+                 .map { |m| [(m.ts.to_f * 1000).to_i, m.value.to_f] }
                  .sort_by(&:first)
       { name: name, data: data }
     end

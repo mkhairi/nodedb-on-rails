@@ -146,7 +146,7 @@ class FeatureSmoke
     puts "=== Timeseries engine ==="
     now = Time.now
     @conn.execute(
-      "INSERT INTO metrics (ts, host, value) VALUES " \
+      "INSERT INTO metrics (timestamp, host, value) VALUES " \
       "('#{now.utc.iso8601}', 'web-01', 1.5), " \
       "('#{(now - 60).utc.iso8601}', 'web-01', 1.7)"
     )
